@@ -18,9 +18,8 @@
     "url": "git+https://github.com/WellDoneSolutions-wds/react-angular-form.git"
   },
   "bugs": {
-    "url": "https://github.com/kraftdorian/react-ts-rollup-starter-lib/issues"
+    "url": "https://github.com/WellDoneSolutions-wds/react-angular-form/issues"
   },
-  "homepage": "https://github.com/kraftdorian/react-ts-rollup-starter-lib#readme",
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
