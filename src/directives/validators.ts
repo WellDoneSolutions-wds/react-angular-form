@@ -3,114 +3,36 @@ import {Observable} from 'rxjs';
 import {AbstractControl} from '../model';
 import {emailValidator, maxLengthValidator, maxValidator, minLengthValidator, minValidator, nullValidator, patternValidator, requiredTrueValidator, requiredValidator} from '../validators';
 
-/**
- * @description
- * Method that updates string to integer if not alread a number
- *
- * @param value The value to convert to integer
- * @returns value of parameter in number or integer.
- */
+
 function toNumber(value: string|number): number {
   return typeof value === 'number' ? value : parseInt(value, 10);
 }
 
-/**
- * @description
- * Defines the map of errors returned from failed validation checks.
- *
- * @publicApi
- */
 export type ValidationErrors = {
   [key: string]: any
 };
 
-/**
- * @description
- * An interface implemented by classes that perform synchronous validation.
- *
- * @usageNotes
- *
- * ### Provide a custom validator
- *
- * The following example implements the `Validator` interface to create a
- * validator directive with a custom error key.
- *
- * ```typescript
- * @Directive({
- *   selector: '[customValidator]',
- *   providers: [{provide: NG_VALIDATORS, useExisting: CustomValidatorDirective, multi: true}]
- * })
- * class CustomValidatorDirective implements Validator {
- *   validate(control: AbstractControl): ValidationErrors|null {
- *     return {'custom': true};
- *   }
- * }
- * ```
- *
- * @publicApi
- */
+
 export interface Validator {
-  /**
-   * @description
-   * Method that performs synchronous validation against the provided control.
-   *
-   * @param control The control to validate against.
-   *
-   * @returns A map of validation errors if validation fails,
-   * otherwise null.
-   */
+
   validate(control: AbstractControl): ValidationErrors|null;
 
-  /**
-   * @description
-   * Registers a callback function to call when the validator inputs change.
-   *
-   * @param fn The callback function
-   */
+
   registerOnValidatorChange?(fn: () => void): void;
 }
 
-/**
- * A base class for Validator-based Directives. The class contains common logic shared across such
- * Directives.
- *
- * For internal use only, this class is not intended for use outside of the Forms package.
- */
 abstract class AbstractValidatorDirective implements Validator {
   private _validator: ValidatorFn = nullValidator;
   private _onChange!: () => void;
 
-  /**
-   * Name of an input that matches directive selector attribute (e.g. `minlength` for
-   * `MinLengthDirective`). An input with a given name might contain configuration information (like
-   * `minlength='10'`) or a flag that indicates whether validator should be enabled (like
-   * `[required]='false'`).
-   *
-   * @internal
-   */
   abstract inputName: string;
 
-  /**
-   * Creates an instance of a validator (specific to a directive that extends this base class).
-   *
-   * @internal
-   */
+  
   abstract createValidator(input: unknown): ValidatorFn;
 
-  /**
-   * Performs the necessary input normalization based on a specific logic of a Directive.
-   * For example, the function might be used to convert string-based representation of the
-   * `minlength` input to an integer value that can later be used in the `Validators.minLength`
-   * validator.
-   *
-   * @internal
-   */
+  
   abstract normalizeInput(input: unknown): unknown;
 
-  /**
-   * Helper function invoked from child classes to process changes (from `ngOnChanges` hook).
-   * @nodoc
-   */
   handleChanges(changes: any): void {
     if (this.inputName in changes) {
       const input = this.normalizeInput(changes[this.inputName].currentValue);
@@ -121,69 +43,28 @@ abstract class AbstractValidatorDirective implements Validator {
     }
   }
 
-  /** @nodoc */
   validate(control: AbstractControl): ValidationErrors|null {
     return this._validator(control);
   }
 
-  /** @nodoc */
   registerOnValidatorChange(fn: () => void): void {
     this._onChange = fn;
   }
 }
 
-/**
- * @description
- * Provider which adds `MaxValidator` to the `NG_VALIDATORS` multi-provider list.
- */
-
-/**
- * A directive which installs the {@link MaxValidator} for any `formControlName`,
- * `formControl`, or control with `ngModel` that also has a `max` attribute.
- *
- * @see [Form Validation](guide/form-validation)
- *
- * @usageNotes
- *
- * ### Adding a max validator
- *
- * The following example shows how to add a max validator to an input attached to an
- * ngModel binding.
- *
- * ```html
- * <input type="number" ngModel max="4">
- * ```
- *
- * @ngModule ReactiveFormsModule
- * @ngModule FormsModule
- * @publicApi
- */
 
 export class MaxValidator extends AbstractValidatorDirective {
-  /**
-   * @description
-   * Tracks changes to the max bound to this directive.
-   */
+
   max!: string|number;
   /** @internal */
 
-  // override inputName = 'max';
   inputName = 'max';
 
-  /** @internal */
-  
-  // override normalizeInput = (input: string): number => parseFloat(input);
  normalizeInput = (input: string): number => parseFloat(input);
   
-  /** @internal */
-  // override createValidator = (max: number): ValidatorFn => maxValidator(max);
+
  createValidator = (max: number): ValidatorFn => maxValidator(max);
-  /**
-   * Declare `ngOnChanges` lifecycle hook at the main directive level (vs keeping it in base class)
-   * to avoid differences in handling inheritance of lifecycle hooks between Ivy and ViewEngine in
-   * AOT mode. This could be refactored once ViewEngine is removed.
-   * @nodoc
-   */
+
   ngOnChanges(changes: any): void {
     this.handleChanges(changes);
   }

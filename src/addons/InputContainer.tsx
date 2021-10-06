@@ -8,10 +8,6 @@ import { IEntityFormState } from "../addons/useEntityForm/model";
 export type LabelTemplateType = (params: { showErrors: boolean, validationStatus: EnumStatusType, label: string }) => any;
 
 interface IInputContainerPureProps<T = any> {
-    // form: {
-    //     submitted?: boolean,
-    //     loadStatus: IProcessingStatus<T>,
-    // },
     formState: IEntityFormState,
     control: FormControl | FormGroup | FormArray,
     renderInput: (params: IInputContainerRenderInputParams) => any,

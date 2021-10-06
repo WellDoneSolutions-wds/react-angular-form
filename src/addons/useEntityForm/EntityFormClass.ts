@@ -8,16 +8,10 @@ type SomeInterface = any;
 
 const retryProcessing = (config: IRetryProcessing) => {
     const retryPipeline = retryWhen(errors => errors.pipe(
-        // Use concat map to keep the errors in order and make sure they
-        // aren't executed in parallel
         concatMap((e, i) =>
-            // Executes a conditional Observable depending on the result
-            // of the first argument
             iif(
                 () => i > 10,
-                // If the condition is true we throw the error (the last error)
                 throwError(e),
-                // Otherwise we pipe this back into our stream and delay the retry
                 of(e).pipe(delay(500))
             )
         )
@@ -92,7 +86,6 @@ export class EntityFormClass<T = any>{
             tap(
                 (processingStatus) => {
                     processingStatus.config.config.onProcessingStatus(processingStatus);
-                    // processingStatus.data&&processingStatus.data.config&&processingStatus.data.config.config&&processingStatus.data.config.config.onProcessingStatus(processingStatus)
 
                     this.setState(
                         (prevState) => {
@@ -343,7 +336,6 @@ export class EntityFormClass<T = any>{
             )
         )
             .subscribe();
-        /**************************************************************** */
     }
 
     private configLoad() {

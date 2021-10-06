@@ -61,17 +61,6 @@ export class EntitySearchClass<T = any>{
                                 takeUntil(this.destroy$),
                                 tap(
                                     (params) => {
-                                        // this.setState(
-                                        //     (prevState) => {
-                                        //         const newState = produce(
-                                        //             (draft: IEntitySearchState) => {
-                                        //                 draft.resourceParams[resource.key] = params;
-                                        //             }
-                                        //         )(prevState);
-                                        //         this.newState = newState;
-                                        //         return newState
-                                        //     }
-                                        // )
                                         processingStatus$.next();
                                     }
                                 ),
@@ -157,7 +146,6 @@ export class EntitySearchClass<T = any>{
                 ),
                 switchMap(
                     (params) => {
-                        /********************************* */
 
                         const resources = this.props.resources || {};
                         const concurrentResources = Object.keys(resources).map(
@@ -188,9 +176,7 @@ export class EntitySearchClass<T = any>{
                                         )
                                 }
                             );
-                        /********************************* */
                         const concurrentResources$ = (loadResources$.length ? forkJoin(loadResources$) : of<IProcessingStatus[]>([]))
-                            // const concurrentResources$ = forkJoin(loadResources$)
                             .pipe(
                                 map(
                                     (resources) => {
