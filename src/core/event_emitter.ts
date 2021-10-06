@@ -105,7 +105,7 @@ export interface EventEmitter<T> extends Subject<T> {
 class EventEmitter_ extends Subject<any> {
   __isAsync: boolean;  // tslint:disable-line
 
-  constructor(isAsync = false) {
+  constructor(isAsync: boolean = false) {
     super();
     this.__isAsync = isAsync;
   }
@@ -113,8 +113,9 @@ class EventEmitter_ extends Subject<any> {
   emit(value?: any) {
     super.next(value);
   }
+  // override subscribe(observerOrNext?: any, error?: any, complete?: any): Subscription {
 
-  override subscribe(observerOrNext?: any, error?: any, complete?: any): Subscription {
+  subscribe(observerOrNext?: any, error?: any, complete?: any): Subscription {
     let nextFn = observerOrNext;
     let errorFn = error || (() => null);
     let completeFn = complete;

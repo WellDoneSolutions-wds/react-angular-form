@@ -1,32 +1,55 @@
-import babel from "@rollup/plugin-babel";
-import resolve from "@rollup/plugin-node-resolve";
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import pkg from "./package.json";
+import nodeResolve from '@rollup/plugin-node-resolve'
+import babel from '@rollup/plugin-babel'
+import replace from '@rollup/plugin-replace'
+import commonjs from '@rollup/plugin-commonjs'
+import { terser } from 'rollup-plugin-terser'
+import pkg from './package.json'
 
-// Array of extensions to be handled by babel
-const EXTENSIONS = [".ts", ".tsx"];
+const env = process.env.NODE_ENV
 
-// Excluded dependencies
-const EXTERNAL = Object.keys(pkg.devDependencies);
+const extensions = ['.js', '.ts', '.tsx', '.json']
 
-export default {
-  input: ["src/index.ts"],
-  output: {
-    dir: "dist",
-    sourcemap: true,
-    format: "esm",
-    preserveModules: true
-  },
-  plugins: [
-    peerDepsExternal(),
-    resolve({
-      extensions: EXTENSIONS
-    }),
-    babel({
-      extensions: EXTENSIONS,
-      babelHelpers: "inline",
-      include: EXTENSIONS.map(ext => `src/**/*${ext}`)
-    })
-  ],
-  external: EXTERNAL
-};
+const config = {
+    input: 'src/index.ts',
+    external: Object.keys(pkg.peerDependencies || {}).concat('react-dom'),
+    output: {
+        format: 'umd',
+        name: 'ReactRedux',
+        globals: {
+            react: 'React',
+            redux: 'Redux',
+            'react-dom': 'ReactDOM',
+        },
+    },
+    plugins: [
+        nodeResolve({
+            extensions,
+        }),
+        babel({
+            include: 'src/**/*',
+            exclude: '**/node_modules/**',
+            babelHelpers: 'runtime',
+            extensions,
+        }),
+        replace({
+            'process.env.NODE_ENV': JSON.stringify(env),
+            preventAssignment: true,
+        }),
+        commonjs(),
+    ],
+}
+
+if (env === 'production') {
+    config.plugins.push(
+        terser({
+            compress: {
+                pure_getters: true,
+                unsafe: true,
+                unsafe_comps: true,
+                warnings: false,
+            },
+        })
+    )
+}
+
+export default config

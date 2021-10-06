@@ -174,11 +174,18 @@ export class MaxValidator extends AbstractValidatorDirective {
    */
   max!: string|number;
   /** @internal */
-  override inputName = 'max';
+
+  // override inputName = 'max';
+  inputName = 'max';
+
   /** @internal */
-  override normalizeInput = (input: string): number => parseFloat(input);
+  
+  // override normalizeInput = (input: string): number => parseFloat(input);
+ normalizeInput = (input: string): number => parseFloat(input);
+  
   /** @internal */
-  override createValidator = (max: number): ValidatorFn => maxValidator(max);
+  // override createValidator = (max: number): ValidatorFn => maxValidator(max);
+ createValidator = (max: number): ValidatorFn => maxValidator(max);
   /**
    * Declare `ngOnChanges` lifecycle hook at the main directive level (vs keeping it in base class)
    * to avoid differences in handling inheritance of lifecycle hooks between Ivy and ViewEngine in
@@ -223,11 +230,17 @@ export class MinValidator extends AbstractValidatorDirective {
    */
   min!: string|number;
   /** @internal */
-  override inputName = 'min';
+  // override inputName = 'min';
+   inputName = 'min';
+ 
   /** @internal */
-  override normalizeInput = (input: string): number => parseFloat(input);
+  // override normalizeInput = (input: string): number => parseFloat(input);
+   normalizeInput = (input: string): number => parseFloat(input);
+  
   /** @internal */
-  override createValidator = (min: number): ValidatorFn => minValidator(min);
+  // override createValidator = (min: number): ValidatorFn => minValidator(min);
+  createValidator = (min: number): ValidatorFn => minValidator(min);
+  
   /**
    * Declare `ngOnChanges` lifecycle hook at the main directive level (vs keeping it in base class)
    * to avoid differences in handling inheritance of lifecycle hooks between Ivy and ViewEngine in
@@ -373,7 +386,8 @@ export class CheckboxRequiredValidator extends RequiredValidator {
    * Returns the validation result if enabled, otherwise null.
    * @nodoc
    */
-  override validate(control: AbstractControl): ValidationErrors|null {
+  //  override validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors|null {
     return this.required ? requiredTrueValidator(control) : null;
   }
 }

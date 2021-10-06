@@ -1,37 +1,25 @@
 {
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ],
   "compilerOptions": {
-    "target": "es5",
-    "module": "esnext",
-    "lib": [
-      "es5",
-      "dom"
-    ],
-    "types": ["jest"],
-    "allowJs": false,
+    "strict": false,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
     "jsx": "react",
     "declaration": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "baseUrl": "src",
-    "paths": {
-      "test-setup": ["test-setup"]
-    },
-    "removeComments": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "emitDeclarationOnly": true,
+    "outDir": "./es",
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "rootDirs": ["./src", "./test", "./types"],
+    "rootDir": "./src",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ]
+  },
+  "include": ["src/**/*", "est/**/*", "types"],
+  "exclude": ["node_modules", "dist"]
 }
