@@ -1,5 +1,12 @@
-import { Observable } from 'rxjs';
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
 
+import { Observable } from 'rxjs';
 import { removeListItem } from './directives/shared';
 import { AsyncValidatorFn, ValidationErrors, ValidatorFn } from './directives/validators';
 import { addValidators, composeAsyncValidators, composeValidators, hasValidator, makeValidatorsArray, removeValidators, toObservable } from './validators';
