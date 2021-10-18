@@ -1,4 +1,4 @@
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { EnumStatusType, IProcessingStatus, IRetryProcessing, ProcessingType } from "../../common/model";
 
 export interface IAsyncCallState<D = any, P = any> {
@@ -13,6 +13,7 @@ export interface IAsyncCallConfigProps<D, P> {
     processingType?: ProcessingType;
     cache?: boolean,
     retry?: IRetryProcessing;
+    source$?: Observable<D> | Subject<D>;
     onProcessingStatus?: (processingStatus: IProcessingStatus<D>, params: P) => void;
     onSuccess?: (data: D, params: P) => void;
     onProcessing?: (params: P) => void;

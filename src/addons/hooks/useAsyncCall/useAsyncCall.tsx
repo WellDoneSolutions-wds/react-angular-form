@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Observable } from "rxjs";
 import { AsyncCall, initialStateAsyncCall } from "./AsyncCall";
 import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState, UseAsyncCallReturn } from "./model";
 
 export const useAsyncCall = <P extends any = any, D extends any = any>(
-    params: { key?: any, params$?: Observable<any> },
     executeFn: IAsyncCallExecuteProps<D, P>,
     config?: IAsyncCallConfigProps<D, P>
 
@@ -12,17 +10,13 @@ export const useAsyncCall = <P extends any = any, D extends any = any>(
     const [, setState] = useState<IAsyncCallState>(initialStateAsyncCall);
     const asyncCallRef = useRef<AsyncCall<P, D>>(
         new AsyncCall<P, D>(
-            params.params$,
             executeFn,
             config,
+            setState,
             null,
-            setState
         )
     );
     const asyncCall = asyncCallRef.current;
-
-
-
     useEffect(
         () => {
             asyncCall.init();
@@ -45,6 +39,6 @@ export const useAsyncCall = <P extends any = any, D extends any = any>(
         getState: asyncCall.getState,
         isError: status.status === 'ERROR',
         setData: asyncCall.setData,
-        ref:asyncCallRef
+        ref: asyncCallRef
     }
 }

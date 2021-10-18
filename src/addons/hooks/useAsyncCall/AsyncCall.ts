@@ -17,13 +17,11 @@ export class AsyncCall<P, D> {
     public newState: IAsyncCallState<D, P> = initialStateAsyncCall;
     private setData$Subject = new Subject<SetDataType2<D>>();
 
-
     constructor(
-        private params$: Observable<P>,
         private executeFn$: IAsyncCallExecuteProps<D, P>,
         private config: IAsyncCallConfigProps<D, P>,
-        public destroy$: Subject<void>,
         private setState: (a: (prevState: IAsyncCallState<D, P>) => IAsyncCallState<D, P>) => void,
+        public destroy$: Subject<void>,
     ) {
         this.destroy$ = destroy$ ? destroy$ : new Subject<void>();
         this.init = this.init.bind(this);
@@ -61,10 +59,9 @@ export class AsyncCall<P, D> {
 
     init() {
         this.initSetData();
-
         const processingStatus$ = new Subject<void>();
-        const params$ = this.params$ ? merge(this.params$, this.execute$) : this.execute$;
         const config: IAsyncCallConfigProps<D, P> = this.config ? this.config : {}
+        const params$ = this.config.source$ ? merge(this.config.source$, this.execute$) : this.execute$;
         const asyncOperation = getTypeOperation(config.processingType)
         merge(
             processingStatus$.pipe(mapTo<IProcessingStatus>({ status: 'PROCESSING' })),

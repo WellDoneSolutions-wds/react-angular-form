@@ -1,6 +1,6 @@
 {
   "name": "react-angular-forms",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React Angular - Reactives Forms like Angular for React",
   "main": "./lib/index.js",
   "types": "./es/index.d.ts",
