@@ -3,10 +3,26 @@ import { Observable } from "rxjs";
 import { AsyncCall, initialStateAsyncCall } from "./AsyncCall";
 import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState, UseAsyncCallReturn } from "./model";
 
-export const useAsyncCall = <P extends unknown = any, R extends unknown = any>(params: { key?: any, params$?: Observable<any> }, executeFn: IAsyncCallExecuteProps, config?: IAsyncCallConfigProps): UseAsyncCallReturn<P, R> => {
+export const useAsyncCall = <P extends any = any, D extends any = any>(
+    params: { key?: any, params$?: Observable<any> },
+    executeFn: IAsyncCallExecuteProps<D, P>,
+    config?: IAsyncCallConfigProps<D, P>
+
+): UseAsyncCallReturn<P, D> => {
     const [, setState] = useState<IAsyncCallState>(initialStateAsyncCall);
-    const AsyncCallRef = useRef<AsyncCall>(new AsyncCall(params.params$, executeFn, config, null, setState));
-    const asyncCall = AsyncCallRef.current;
+    const asyncCallRef = useRef<AsyncCall<P, D>>(
+        new AsyncCall<P, D>(
+            params.params$,
+            executeFn,
+            config,
+            null,
+            setState
+        )
+    );
+    const asyncCall = asyncCallRef.current;
+
+
+
     useEffect(
         () => {
             asyncCall.init();
@@ -25,8 +41,10 @@ export const useAsyncCall = <P extends unknown = any, R extends unknown = any>(p
         isSuccess: status.status === 'SUCCESS',
         execute: asyncCall.execute,
         reload: asyncCall.reload,
-        status: status.status,
+        status: asyncCall.getStatus(),
         getState: asyncCall.getState,
-        isError: status.status === 'ERROR'
+        isError: status.status === 'ERROR',
+        setData: asyncCall.setData,
+        ref:asyncCallRef
     }
 }

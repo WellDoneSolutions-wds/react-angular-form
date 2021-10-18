@@ -1,5 +1,5 @@
 
- import {AsyncValidatorFn, ValidatorFn} from './directives/validators';
+ import {AsyncValidatorFn, ValidatorFn} from './core/validators';
  import {AbstractControl, AbstractControlOptions, FormArray, FormControl, FormGroup, FormHooks} from './model';
  
  function isAbstractControlOptions(options: AbstractControlOptions|

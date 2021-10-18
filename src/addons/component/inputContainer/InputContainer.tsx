@@ -4,8 +4,8 @@ import { Subject } from "rxjs";
 import { map, startWith, takeUntil, tap } from "rxjs/operators";
 import { FormControl } from "../../..";
 import { AbstractControl } from "../../../model";
-import { IProcessingStatus } from "../../common/model";
-import { IInputContainerProps, IInputContainerPropsData, IInputContainerPropsForm, IInputContainerPropsShowErrorsFn } from "./model";
+import { IProcessingStatus, EnumStatusType } from "../../common/model";
+import { IInputContainerProps, IInputContainerPropsData, IInputContainerPropsShowErrorsFn } from "./model";
 
 export class InputContainer extends PureComponent<IInputContainerProps, IProcessingStatus> {
     constructor(props: any) {
@@ -29,7 +29,7 @@ export class InputContainer extends PureComponent<IInputContainerProps, IProcess
                 startWith(control.status),
                 map(
                     (statusType: string): IProcessingStatus => {
-                        if (statusType === 'INVALID') { // INVALID, PENDING, DISABLED,  VALID
+                        if (statusType === 'INVALID') {
                             return {
                                 status: 'ERROR',
                                 error: control.errors
@@ -77,49 +77,48 @@ export class InputContainer extends PureComponent<IInputContainerProps, IProcess
 
     render() {
         const control = this.props.control as FormControl;
-        const showErrorsFn: IInputContainerPropsShowErrorsFn = this.props.showErrorsFn ? this.props.showErrorsFn : () => true
-        const form: IInputContainerPropsForm = this.props.form ? this.props.form : {};
-        const formLoadStatus: IProcessingStatus = form.loadStatus ? form.loadStatus : { status: 'SUCCESS' };
-        const formSubmitted = !!form.submitted;
-        const showErrors = control ? showErrorsFn({ formSubmitted, control }) : false
-
+        const showErrorsFn: IInputContainerPropsShowErrorsFn = this.props.showErrorsFn ? this.props.showErrorsFn : () => true;
+        const formLoadStatus: EnumStatusType = this.props.formLoadStatus ? this.props.formLoadStatus : 'SUCCESS';
+        const showErrors = control ? showErrorsFn(control) : false
         const data: IInputContainerPropsData = this.props.data ? this.props.data : {};
         const dataLoadStatus: IProcessingStatus = data.load ? data.load : { status: 'SUCCESS' }
-
         const renderLabel = this.props.renderLabel;
         const labelTemplate = renderLabel && renderLabel({
             showErrors,
             validationStatus: this.state.status!,
         });
         const renderInput = this.props.renderInput;
-        const inputTemplate = control && formLoadStatus.status === 'SUCCESS' &&
+        const inputTemplate = control && formLoadStatus === 'SUCCESS' &&
             dataLoadStatus.status === 'SUCCESS' &&
             renderInput({ control, data: dataLoadStatus.data, validationStatus: this.state.status, showErrors });
 
         const renderProcessing = this.props.renderProcessing;
-        const processingTemplate = (formLoadStatus.status === 'PROCESSING' || dataLoadStatus.status === 'PROCESSING') && renderProcessing && renderProcessing();
+        // if(formLoadStatus==='PROCESSING'){
+        //     debugger;
+        // }
+        const processingTemplate = (formLoadStatus === 'PROCESSING' || dataLoadStatus.status === 'PROCESSING') && renderProcessing && renderProcessing();
 
         const renderValidationErrors = this.props.renderValidationErrors;
-        const validationErrorsTemplate = formLoadStatus.status === 'SUCCESS' &&
+        const validationErrorsTemplate = control && formLoadStatus === 'SUCCESS' &&
             dataLoadStatus.status === 'SUCCESS' &&
             showErrors &&
-            renderValidationErrors && renderValidationErrors({ errors: this.state.error, formSubmitted, control })
+            renderValidationErrors && renderValidationErrors({ errors: this.state.error, control })
         const renderReload = data.renderReload;
-        const reloadTemplate = dataLoadStatus.status === 'ERROR' && renderReload && renderReload({ reloadFn: () => { } })
+        const reloadTemplate = dataLoadStatus.status === 'ERROR' && renderReload && renderReload(dataLoadStatus.error);
 
         return (
             <>
-                {formLoadStatus.status !== 'ERROR' && this.props.control && (
-                    <div style={this.props.style || {}} className={this.props.className || ''}>
+                {formLoadStatus !== 'ERROR' && (
+                    <>
                         {labelTemplate}
                         {inputTemplate}
                         {processingTemplate}
                         {validationErrorsTemplate}
                         {reloadTemplate}
-                    </div>
+                    </>
                 )}
-                {formLoadStatus.status === 'SUCCESS' && dataLoadStatus.status === 'SUCCESS' && !this.props.control && (
-                    <>Control=Null</>
+                {formLoadStatus === 'SUCCESS' && dataLoadStatus.status === 'SUCCESS' && !this.props.control && (
+                    <></>
                 )}
             </>
         )

@@ -15,6 +15,6 @@ export * from './addons/hooks/useFormGroup/useFormGroup';
 export * from './addons/hooks/useObservableSubscribe/model';
 export * from './addons/hooks/useObservableSubscribe/useObservableSubscribe';
 export * from './core/event_emitter';
-export * from './directives/validators';
+export * from './core/validators';
 export * from './model';
 export * from './validators';

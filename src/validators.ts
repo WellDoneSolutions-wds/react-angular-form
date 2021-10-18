@@ -3,7 +3,7 @@ import { ModuleUtils} from './utils/lang';
 import {forkJoin, from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {AsyncValidator, AsyncValidatorFn, ValidationErrors, Validator, ValidatorFn} from './directives/validators';
+import {AsyncValidator, AsyncValidatorFn, ValidationErrors, Validator, ValidatorFn} from './core/validators';
 import {AbstractControl} from './model';
 
 function isEmptyInputValue(value: any): boolean {

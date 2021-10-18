@@ -7,12 +7,13 @@
  */
 
 import { Observable } from 'rxjs';
-import { removeListItem } from './directives/shared';
-import { AsyncValidatorFn, ValidationErrors, ValidatorFn } from './directives/validators';
+// import { removeListItem } from './directives/shared';
+import { AsyncValidatorFn, ValidationErrors, ValidatorFn } from './core/validators';
 import { addValidators, composeAsyncValidators, composeValidators, hasValidator, makeValidatorsArray, removeValidators, toObservable } from './validators';
 import { EventEmitter, EventEmitter2 } from './core/event_emitter';
 import produce from 'immer';
 import nestedProperty from 'nested-property';
+import { removeListItem } from './core/shared';
 
 export const VALID = 'VALID';
 
@@ -90,7 +91,7 @@ function isOptionsObj(validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractCo
 export abstract class AbstractControl {
   _pendingDirty!: boolean;
 
- 
+
   _hasOwnPendingAsyncValidator = false;
 
   _pendingTouched!: boolean;
@@ -149,7 +150,7 @@ export abstract class AbstractControl {
     return this.status === INVALID;
   }
 
- 
+
   get pending(): boolean {
     return this.status == PENDING;
   }
@@ -164,7 +165,7 @@ export abstract class AbstractControl {
 
   public readonly errors!: ValidationErrors | null;
 
-  
+
   public readonly pristine: boolean = true;
 
   get dirty(): boolean {
@@ -178,7 +179,7 @@ export abstract class AbstractControl {
   }
 
   public readonly valueChanges!: Observable<any>;
- 
+
   public readonly statusChanges!: Observable<FormControlStatus>;
 
   get updateOn(): FormHooks {
@@ -288,7 +289,7 @@ export abstract class AbstractControl {
   }
 
   disable(opts: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
- 
+
     const skipPristineCheck = this._parentMarkedDirty(opts.onlySelf);
 
     (this as { status: FormControlStatus }).status = DISABLED;
@@ -405,7 +406,7 @@ export abstract class AbstractControl {
     this._updateControlsErrors(opts.emitEvent !== false);
   }
 
- 
+
   get(path: Array<string | number> | string): AbstractControl | null {
     return _find(this, path, '.');
   }
@@ -603,7 +604,7 @@ export class FormControl extends AbstractControl {
     });
   }
 
- 
+
   setValue(value: any, options: {
 
     onlySelf?: boolean,
@@ -612,7 +613,7 @@ export class FormControl extends AbstractControl {
     emitViewToModelChange?: boolean
   } = {}): void {
     (this as { value: any }).value = this._pendingValue = value;
-    
+
     const root = this.getRoot();
     const tempPath = this.getPath().join('.');
     const path = root.nestedPath ? `${root.nestedPath}.${tempPath}` : tempPath;
@@ -730,7 +731,7 @@ export class FormControl extends AbstractControl {
       const emitChangeToView = !this.touched;
       if (!this.touched) {
         this.markAsTouched();
-        this.setValue(this.value); 
+        this.setValue(this.value);
       }
       if (emitChangeToView) {
 
@@ -802,7 +803,7 @@ export class FormGroup extends AbstractControl {
 
   patchValue(
     value: { [key: string]: any }, options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
-  
+
     if (value == null /* both `null` and `undefined` */) return;
 
     Object.keys(value).forEach(name => {
@@ -920,7 +921,7 @@ export class FormGroup extends AbstractControl {
 }
 
 export class FormArray extends AbstractControl {
- 
+
   constructor(
     public controls: AbstractControl[],
     validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
@@ -964,7 +965,7 @@ export class FormArray extends AbstractControl {
 
   removeAt(index: number, options: { emitEvent?: boolean } = {}): void {
     if (this.controls[index]) this.controls[index]._registerOnCollectionChange(() => { });
-    
+
     const path = this.getPath().join('.');
     const newState = produce(
       (draftState) => {

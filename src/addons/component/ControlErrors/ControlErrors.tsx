@@ -32,8 +32,7 @@ export const ControlErrors: FC<ControlErrorsProps> = (props) => {
     const renderErrors = props.renderErrors;
     const errorTemplate = value.status === 'ERROR' && renderErrors && renderErrors({
         errors: value.error,
-        control: props.control,
-        formSubmitted: true
+        control: props.control
     });
     const renderProcessing = props.renderProcessing;
     const processingTemplate = value.status === 'PROCESSING' && renderProcessing && renderProcessing()

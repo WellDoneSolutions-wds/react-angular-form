@@ -1,9 +1,9 @@
 import produce from "immer";
-import { catchError, from, map, mapTo, merge, Observable, of, Subject, take, takeUntil, tap } from "rxjs";
+import { catchError, debounceTime, from, map, mapTo, merge, Observable, of, Subject, take, takeUntil, tap } from "rxjs";
 import { ModuleUtils } from "../../../utils/lang";
 import { IProcessingStatus, IRetryProcessing } from "../../common/model";
 import { getTypeOperation, retryProcessing } from "../../common/utils";
-import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState } from "./model";
+import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState, SetDataType2 } from "./model";
 
 export const initialStateAsyncCall: IAsyncCallState = {
     params: {},
@@ -11,31 +11,66 @@ export const initialStateAsyncCall: IAsyncCallState = {
     errors: []
 }
 
-export class AsyncCall {
-    private execute$ = new Subject<any>();
-    public newState: IAsyncCallState = initialStateAsyncCall;
+export class AsyncCall<P, D> {
+
+    private execute$ = new Subject<P>();
+    public newState: IAsyncCallState<D, P> = initialStateAsyncCall;
+    private setData$Subject = new Subject<SetDataType2<D>>();
+
 
     constructor(
-        private params$: Observable<any>,
-        private executeFn$: IAsyncCallExecuteProps,
-        private config: IAsyncCallConfigProps,
+        private params$: Observable<P>,
+        private executeFn$: IAsyncCallExecuteProps<D, P>,
+        private config: IAsyncCallConfigProps<D, P>,
         public destroy$: Subject<void>,
-        private setState: (a: (prevState: IAsyncCallState) => IAsyncCallState) => void,
+        private setState: (a: (prevState: IAsyncCallState<D, P>) => IAsyncCallState<D, P>) => void,
     ) {
         this.destroy$ = destroy$ ? destroy$ : new Subject<void>();
         this.init = this.init.bind(this);
         this.getState = this.getState.bind(this);
         this.reload = this.reload.bind(this);
+        this.initSetData = this.initSetData.bind(this);
+        this.getStatus = this.getStatus.bind(this);
+    }
+
+    getStatus() {
+        return this.newState.status.status;
+    }
+
+    private initSetData() {
+        this.setData$Subject.pipe(
+            takeUntil(this.destroy$),
+            tap(setData => {
+                this.setState(
+                    (prevState) => {
+                        const newState = produce(
+                            (draft: IAsyncCallState) => {
+                                const state = this.getState();
+                                debugger;
+                                draft.status.data = setData(state.status.data);
+                            }
+                        )(prevState)
+                        this.newState = newState;
+                        return newState;
+                    }
+                );
+            })
+        )
+            .subscribe()
     }
 
     init() {
+        this.initSetData();
+
         const processingStatus$ = new Subject<void>();
         const params$ = this.params$ ? merge(this.params$, this.execute$) : this.execute$;
-        const asyncOperation = getTypeOperation(this.config.processingType)
+        const config: IAsyncCallConfigProps<D, P> = this.config ? this.config : {}
+        const asyncOperation = getTypeOperation(config.processingType)
         merge(
             processingStatus$.pipe(mapTo<IProcessingStatus>({ status: 'PROCESSING' })),
             params$.pipe(
                 takeUntil(this.destroy$),
+                debounceTime(10),
                 tap(
                     (params) => {
                         this.setState(
@@ -53,10 +88,10 @@ export class AsyncCall {
                     }
                 ),
                 asyncOperation(
-                    (params: any) => {
+                    (params: P) => {
                         const data$ = this.executeFn$ ? this.executeFn$(params) : of(params);
                         const loadData$: Observable<any> = ModuleUtils.isObservable(data$) ? data$ : (ModuleUtils.isPromise(data$) ? from(data$) : of(data$))
-                        const retryConfig: IRetryProcessing = this.config.retry ? this.config.retry : {
+                        const retryConfig: IRetryProcessing = config.retry ? config.retry : {
                             interval: 100
                         };
                         return loadData$.pipe(
@@ -83,21 +118,12 @@ export class AsyncCall {
         )
             .pipe(
                 takeUntil(this.destroy$),
-                tap((processingStatus) => {
-                    const params = this.newState.params;
-                    processingStatus.status === 'PROCESSING' && this.config.onProcessing && this.config.onProcessing(params);
-                    processingStatus.status === 'ERROR' && this.config.onError && this.config.onError(processingStatus.error, params);
-                    processingStatus.status === 'SUCCESS' && this.config.onSuccess && this.config.onSuccess(processingStatus.data, params);
-                    this.config.onProcessingStatus && this.config.onProcessingStatus(processingStatus, this.newState.params);
-
-                }),
                 tap(
                     (processingStatus) => {
                         this.setState(
                             (prevState) => {
                                 const newState = produce(
                                     (draft: IAsyncCallState) => {
-                                        draft.status.status = processingStatus.status;
                                         draft.status.data = processingStatus.data;
                                         draft.status.error = processingStatus.error;
                                     }
@@ -108,7 +134,26 @@ export class AsyncCall {
                         );
                     }
                 ),
- 
+                tap(
+                    (processingStatus) => {
+                        const params = this.newState.params;
+                        processingStatus.status === 'PROCESSING' && config.onProcessing && config.onProcessing(params);
+                        processingStatus.status === 'ERROR' && config.onError && config.onError(processingStatus.error, params);
+                        processingStatus.status === 'SUCCESS' && config.onSuccess && config.onSuccess(processingStatus.data, params);
+                        this.setState(
+                            (prevState) => {
+                                const newState = produce(
+                                    (draft: IAsyncCallState) => {
+                                        draft.status.status = processingStatus.status;
+                                    }
+                                )(prevState)
+                                this.newState = newState;
+                                return newState;
+                            }
+                        );
+                    }
+                )
+
             )
             .subscribe()
     }
@@ -121,17 +166,11 @@ export class AsyncCall {
         this.execute$.next(this.newState.params);
     }
 
-    get execute() {
+    get execute(): (params: P) => void {
         return this.execute$.next.bind(this.execute$);
     }
 
-    // get configx() /*: UseFormGroupConfig*/ {
-    //     return {
-    //         state: this.newState,
-    //         execute: this.execute$.next.bind(this.execute$),
-    //         destroy$: this.destroy$,
-    //         getData: this.getData
-    //     }
-    // }
-
+    get setData(): (callBack: SetDataType2<D>) => void {
+        return this.setData$Subject.next.bind(this.setData$Subject);
+    }
 }
