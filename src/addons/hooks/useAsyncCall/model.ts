@@ -20,7 +20,6 @@ export interface IAsyncCallConfigProps<D, P> {
     onError?: (error: any, params: P) => void;
 }
 
-
 export interface UseAsyncCallReturn<P = any, D = any> {
     data: D,
     error: any,
@@ -31,12 +30,10 @@ export interface UseAsyncCallReturn<P = any, D = any> {
     execute: (params: P) => void,
     reload: () => void,
     status: EnumStatusType,
-    setData: (callBack: SetDataType2<D>) => void,
+    setData: SetDataType<D>,
     ref: any
 }
 
+export type SetDataTypeCallbackType<T> = (prevData: T) => T;
 
-export type setDataType<T = any> = (a: (prevState: T) => T) => void
-
-export type SetDataType2<T> = (prevData: T) => T
-
+export type SetDataType<T> = (callBack: SetDataTypeCallbackType<T>) => void

@@ -3,7 +3,7 @@ import { catchError, debounceTime, from, map, mapTo, merge, Observable, of, Subj
 import { ModuleUtils } from "../../../utils/lang";
 import { IProcessingStatus, IRetryProcessing } from "../../common/model";
 import { getTypeOperation, retryProcessing } from "../../common/utils";
-import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState, SetDataType2 } from "./model";
+import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState, SetDataType, SetDataTypeCallbackType } from "./model";
 
 export const initialStateAsyncCall: IAsyncCallState = {
     params: {},
@@ -15,7 +15,7 @@ export class AsyncCall<P, D> {
 
     private execute$ = new Subject<P>();
     public newState: IAsyncCallState<D, P> = initialStateAsyncCall;
-    private setData$Subject = new Subject<SetDataType2<D>>();
+    private setData$Subject = new Subject<SetDataTypeCallbackType<D>>();
 
     constructor(
         private executeFn$: IAsyncCallExecuteProps<D, P>,
@@ -61,7 +61,7 @@ export class AsyncCall<P, D> {
         this.initSetData();
         const processingStatus$ = new Subject<void>();
         const config: IAsyncCallConfigProps<D, P> = this.config ? this.config : {}
-        const params$ = this.config.source$ ? merge(this.config.source$, this.execute$) : this.execute$;
+        const params$ = config.source$ ? merge(this.config.source$, this.execute$) : this.execute$;
         const asyncOperation = getTypeOperation(config.processingType)
         merge(
             processingStatus$.pipe(mapTo<IProcessingStatus>({ status: 'PROCESSING' })),
@@ -167,7 +167,7 @@ export class AsyncCall<P, D> {
         return this.execute$.next.bind(this.execute$);
     }
 
-    get setData(): (callBack: SetDataType2<D>) => void {
+    get setData(): SetDataType<D> {
         return this.setData$Subject.next.bind(this.setData$Subject);
     }
 }
