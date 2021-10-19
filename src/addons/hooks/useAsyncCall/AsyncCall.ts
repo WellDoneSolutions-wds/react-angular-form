@@ -91,6 +91,7 @@ export class AsyncCall<P, D> {
                                 const newState = produce(
                                     (draft: IAsyncCallState) => {
                                         draft.params = params;
+                                        draft.errors = [];
                                     }
                                 )(prevState)
                                 this.newState = newState;
