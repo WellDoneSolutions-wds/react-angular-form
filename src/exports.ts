@@ -1,5 +1,6 @@
+export * from './addons/mockServer/model';
+export * from './addons/mockServer/MockServer';
 export * from './addons/common/model';
-export * from './addons/common/utils';
 export * from './addons/component/AsyncElement/AsyncElement';
 export * from './addons/component/AsyncElement/model';
 export * from './addons/component/inputContainer/InputContainer';
