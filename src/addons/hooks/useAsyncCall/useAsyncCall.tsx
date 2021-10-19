@@ -39,6 +39,7 @@ export const useAsyncCall = <P extends any = any, D extends any = any>(
         getState: asyncCall.getState,
         isError: status.status === 'ERROR',
         setData: asyncCall.setData,
-        ref: asyncCallRef
+        ref: asyncCallRef,
+        allErrors: asyncCall.newState.errors
     }
 }

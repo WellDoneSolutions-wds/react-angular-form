@@ -31,7 +31,8 @@ export interface UseAsyncCallReturn<P = any, D = any> {
     reload: () => void,
     status: EnumStatusType,
     setData: SetDataType<D>,
-    ref: any
+    ref: any,
+    allErrors: any[]
 }
 
 export type SetDataTypeCallbackType<T> = (prevData: T) => T;
