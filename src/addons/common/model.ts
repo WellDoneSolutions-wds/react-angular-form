@@ -15,9 +15,11 @@ export interface PlainObject {
     [key: string]: PlainObject | PlainObjectType | PlainObjectType[] | PlainObject[]
 }
 export interface IRetryProcessing {
-    numberRetries?: number,
+    maxRetryAttempts: number,
     interval: number,
-    exponential?: number,
+    typeInterval?: 'LINEAR' | 'EXPONENTIAL',
+    retryWhenStatus?: number[],
+    notRetryWhenStatus?: number[]
     retryWhen?: (error: any) => boolean,
     noRetryWhen?: (error: any) => boolean,
 }

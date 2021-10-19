@@ -12,7 +12,7 @@ import { AsyncValidatorFn, ValidationErrors, ValidatorFn } from './core/validato
 import { addValidators, composeAsyncValidators, composeValidators, hasValidator, makeValidatorsArray, removeValidators, toObservable } from './validators';
 import { EventEmitter, EventEmitter2 } from './core/event_emitter';
 import produce from 'immer';
-import nestedProperty from 'nested-property';
+import * as property from './utils/property';
 import { removeListItem } from './core/shared';
 
 export const VALID = 'VALID';
@@ -557,7 +557,7 @@ export abstract class AbstractControl {
     } else {
       const newState = produce(
         (draftState) => {
-          nestedProperty.set(draftState, path, value);
+          property.setValue(draftState, path, value);
         });
       dispatchStateFn(newState)
     }
@@ -947,7 +947,7 @@ export class FormArray extends AbstractControl {
     const path = this.getPath().join('.') + '.' + control.path;
     const newState = produce(
       (draftState) => {
-        nestedProperty.set(draftState, path, control.value);
+        property.setValue(draftState, path, control.value);
       });
     this.setState(newState)
 
@@ -969,7 +969,7 @@ export class FormArray extends AbstractControl {
     const path = this.getPath().join('.');
     const newState = produce(
       (draftState) => {
-        const controls = nestedProperty.get(draftState, path);
+        const controls = property.getValue(draftState, path);
         controls.splice(index, 1);
       });
     this.setState(newState);

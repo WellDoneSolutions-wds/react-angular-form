@@ -1,14 +1,30 @@
 import produce from "immer";
-import { catchError, debounceTime, from, map, mapTo, merge, Observable, of, Subject, take, takeUntil, tap } from "rxjs";
+import { catchError, concatMap, debounceTime, delay, exhaustMap, flatMap, from, iif, map, mapTo, merge, mergeMap, Observable, of, retryWhen, Subject, switchMap, take, takeUntil, tap, throwError } from "rxjs";
 import { ModuleUtils } from "../../../utils/lang";
-import { IProcessingStatus, IRetryProcessing } from "../../common/model";
-import { getTypeOperation, retryProcessing } from "../../common/utils";
+import { IProcessingStatus, IRetryProcessing, ProcessingType } from "../../common/model";
 import { IAsyncCallConfigProps, IAsyncCallExecuteProps, IAsyncCallState, SetDataType, SetDataTypeCallbackType } from "./model";
 
 export const initialStateAsyncCall: IAsyncCallState = {
     params: {},
     status: {},
     errors: []
+}
+
+export const getTypeOperation = (processingType: ProcessingType) => {
+    switch (processingType) {
+        case ProcessingType.CONCAT:
+            return concatMap;
+        case ProcessingType.EXHAUST:
+            return exhaustMap;
+        case ProcessingType.FLAT:
+            return flatMap;
+        case ProcessingType.MERGE:
+            return mergeMap;
+        case ProcessingType.SWITCH:
+            return switchMap;
+        default:
+            return switchMap;
+    }
 }
 
 export class AsyncCall<P, D> {
@@ -89,10 +105,61 @@ export class AsyncCall<P, D> {
                         const data$ = this.executeFn$ ? this.executeFn$(params) : of(params);
                         const loadData$: Observable<any> = ModuleUtils.isObservable(data$) ? data$ : (ModuleUtils.isPromise(data$) ? from(data$) : of(data$))
                         const retryConfig: IRetryProcessing = config.retry ? config.retry : {
-                            interval: 100
+                            interval: 1000,
+                            maxRetryAttempts: 0
                         };
+                        const maxRetryAttempts = retryConfig.maxRetryAttempts ? retryConfig.maxRetryAttempts : 0;
+                        const retryWhenStatus = retryConfig.retryWhenStatus ? retryConfig.retryWhenStatus : [];
+                        const notRetryWhenStatus = retryConfig.notRetryWhenStatus ? retryConfig.notRetryWhenStatus : [];
                         return loadData$.pipe(
-                            retryProcessing(retryConfig),
+                            retryWhen(
+                                errors => errors.pipe(
+                                    tap(e => {
+                                        this.setState(
+                                            (prevState) => {
+                                                const newState = produce(
+                                                    (draft: IAsyncCallState) => {
+                                                        draft.errors.push(e);
+                                                    }
+                                                )(prevState)
+                                                this.newState = newState;
+                                                return newState;
+                                            }
+                                        );
+                                    }),
+                                    concatMap((e: any, i) =>
+                                        iif(
+                                            () => {
+                                                if (i < maxRetryAttempts) {
+                                                    const responseStatus = (e || {}).status || 0;
+                                                    const retry = !!(retryWhenStatus.find(status => status === responseStatus));
+                                                    if (retry) {
+                                                        return false;
+                                                    }
+                                                    const notRetry = !!notRetryWhenStatus.find(status => status === responseStatus);
+                                                    if (notRetry) {
+                                                        return true;
+                                                    }
+                                                    if (retryConfig.retryWhen && retryConfig.retryWhen(e)) {
+                                                        return false;
+                                                    }
+                                                    if (retryConfig.noRetryWhen && retryConfig.noRetryWhen(e)) {
+                                                        return true;
+                                                    }
+                                                    return false;
+                                                }
+                                                return true;
+                                            },
+                                            throwError(e),
+                                            of(e).pipe(
+                                                delay(
+                                                    ((retryConfig.typeInterval === 'LINEAR' && 1) || (retryConfig.typeInterval === 'EXPONENTIAL' && i)) * retryConfig.interval
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
                             take(1),
                             map(
                                 (data): IProcessingStatus => {
