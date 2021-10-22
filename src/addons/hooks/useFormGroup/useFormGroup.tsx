@@ -28,11 +28,12 @@ export const useFormGroup = (formGroup?: FormGroup): UseFormGroupReturn => {
       )
       .subscribe();
   }, []);
+  const getFormGroup= () => {
+    return formGroupRef.current;
+  }
   return {
     formGroup: formGroupRef.current,
     setFormGroup: setFormGroup$.next.bind(setFormGroup$),
-    getFormGroup: () => {
-      return formGroupRef.current;
-    },
+    getFormGroup: getFormGroup.bind(formGroupRef)
   };
 };
