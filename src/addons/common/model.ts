@@ -1,39 +1,45 @@
 import { Observable } from "rxjs";
 
 export enum ProcessingType {
-    EXHAUST,
-    CONCAT,
-    MERGE,
-    SWITCH,
-    FLAT
+  EXHAUST,
+  CONCAT,
+  MERGE,
+  SWITCH,
+  FLAT,
 }
-
 
 export type PlainObjectType = string | number | boolean | Date;
 
 export interface PlainObject {
-    [key: string]: PlainObject | PlainObjectType | PlainObjectType[] | PlainObject[]
+  [key: string]:
+    | PlainObject
+    | PlainObjectType
+    | PlainObjectType[]
+    | PlainObject[];
 }
 export interface IRetryProcessing {
-    maxRetryAttempts: number,
-    interval: number,
-    typeInterval?: 'LINEAR' | 'EXPONENTIAL',
-    retryWhenStatus?: number[],
-    notRetryWhenStatus?: number[]
-    retryWhen?: (error: any) => boolean,
-    noRetryWhen?: (error: any) => boolean,
+  maxRetryAttempts: number;
+  interval: number;
+  typeInterval?: "LINEAR" | "EXPONENTIAL";
+  retryWhenStatus?: number[];
+  notRetryWhenStatus?: number[];
+  retryWhen?: (error: any) => boolean;
+  noRetryWhen?: (error: any) => boolean;
 }
 
 export interface IAsyncCallConfig {
-    executeFn$?: (params: any) => any | Promise<any> | Observable<any>,
-    retry?: IRetryProcessing,
-    onProcessingStatus?: (processingStatus: IProcessingStatus, params: PlainObject) => void
+  executeFn$?: (params: any) => any | Promise<any> | Observable<any>;
+  retry?: IRetryProcessing;
+  onProcessingStatus?: (
+    processingStatus: IProcessingStatus,
+    params: PlainObject
+  ) => void;
 }
 
-export type EnumStatusType = 'PROCESSING' | 'SUCCESS' | 'ERROR' | 'CANCELED';
+export type EnumStatusType = "PROCESSING" | "SUCCESS" | "ERROR" | "CANCELED";
 export interface IProcessingStatus<T = any> {
-    status?: EnumStatusType,
-    data?: T,
-    error?: any,
-    config?: any
+  status?: EnumStatusType;
+  data?: T;
+  error?: any;
+  config?: any;
 }

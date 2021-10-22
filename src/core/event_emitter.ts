@@ -1,21 +1,23 @@
-import {PartialObserver, Subject, Subscription} from 'rxjs';
+import { PartialObserver, Subject, Subscription } from "rxjs";
 
 export interface EventEmitter<T> extends Subject<T> {
-
   __isAsync: boolean;
 
-  new(isAsync?: boolean): EventEmitter<T>;
+  new (isAsync?: boolean): EventEmitter<T>;
 
   emit(value?: T): void;
 
-  subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void):
-      Subscription;
+  subscribe(
+    next?: (value: T) => void,
+    error?: (error: any) => void,
+    complete?: () => void
+  ): Subscription;
 
   subscribe(observerOrNext?: any, error?: any, complete?: any): Subscription;
 }
 
 class EventEmitter_ extends Subject<any> {
-  __isAsync: boolean;  // tslint:disable-line
+  __isAsync: boolean; // tslint:disable-line
 
   constructor(isAsync: boolean = false) {
     super();
@@ -31,7 +33,7 @@ class EventEmitter_ extends Subject<any> {
     let errorFn = error || (() => null);
     let completeFn = complete;
 
-    if (observerOrNext && typeof observerOrNext === 'object') {
+    if (observerOrNext && typeof observerOrNext === "object") {
       const observer = observerOrNext as PartialObserver<unknown>;
       nextFn = observer.next?.bind(observer);
       errorFn = observer.error?.bind(observer);
@@ -50,7 +52,11 @@ class EventEmitter_ extends Subject<any> {
       }
     }
 
-    const sink = super.subscribe({next: nextFn, error: errorFn, complete: completeFn});
+    const sink = super.subscribe({
+      next: nextFn,
+      error: errorFn,
+      complete: completeFn,
+    });
 
     if (observerOrNext instanceof Subscription) {
       observerOrNext.add(sink);
@@ -70,6 +76,7 @@ function _wrapInTimeout(fn: (value: unknown) => any) {
  * @publicApi
  */
 export const EventEmitter2: {
-  new (isAsync?: boolean): EventEmitter<any>; new<T>(isAsync?: boolean): EventEmitter<T>;
+  new (isAsync?: boolean): EventEmitter<any>;
+  new <T>(isAsync?: boolean): EventEmitter<T>;
   readonly prototype: EventEmitter<any>;
 } = EventEmitter_ as any;

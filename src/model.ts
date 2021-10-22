@@ -6,26 +6,41 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import { Observable } from 'rxjs';
-// import { removeListItem } from './directives/shared';
-import { AsyncValidatorFn, ValidationErrors, ValidatorFn } from './core/validators';
-import { addValidators, composeAsyncValidators, composeValidators, hasValidator, makeValidatorsArray, removeValidators, toObservable } from './validators';
-import { EventEmitter, EventEmitter2 } from './core/event_emitter';
-import produce from 'immer';
-import * as property from './utils/property';
-import { removeListItem } from './core/shared';
+import { Observable } from "rxjs";
+import {
+  AsyncValidatorFn,
+  ValidationErrors,
+  ValidatorFn,
+} from "./core/validators";
+import {
+  addValidators,
+  composeAsyncValidators,
+  composeValidators,
+  hasValidator,
+  makeValidatorsArray,
+  removeValidators,
+  toObservable,
+} from "./validators";
+import { EventEmitter, EventEmitter2 } from "./core/event_emitter";
+import produce from "immer";
+import * as property from "./utils/property";
+import { removeListItem } from "./core/shared";
 
-export const VALID = 'VALID';
+export const VALID = "VALID";
 
-export const INVALID = 'INVALID';
+export const INVALID = "INVALID";
 
-export const PENDING = 'PENDING';
+export const PENDING = "PENDING";
 
-export const DISABLED = 'DISABLED';
+export const DISABLED = "DISABLED";
 
-export type FormControlStatus = 'VALID' | 'INVALID' | 'PENDING' | 'DISABLED';
+export type FormControlStatus = "VALID" | "INVALID" | "PENDING" | "DISABLED";
 
-function _find(control: AbstractControl, path: Array<string | number> | string, delimiter: string) {
+function _find(
+  control: AbstractControl,
+  path: Array<string | number> | string,
+  delimiter: string
+) {
   if (path == null) return null;
 
   if (!Array.isArray(path)) {
@@ -36,9 +51,9 @@ function _find(control: AbstractControl, path: Array<string | number> | string, 
   let controlToFind: AbstractControl | null = control;
   path.forEach((name: string | number) => {
     if (controlToFind instanceof FormGroup) {
-      controlToFind = controlToFind.controls.hasOwnProperty(name as string) ?
-        controlToFind.controls[name] :
-        null;
+      controlToFind = controlToFind.controls.hasOwnProperty(name as string)
+        ? controlToFind.controls[name]
+        : null;
     } else if (controlToFind instanceof FormArray) {
       controlToFind = controlToFind.at(<number>name) || null;
     } else {
@@ -48,55 +63,71 @@ function _find(control: AbstractControl, path: Array<string | number> | string, 
   return controlToFind;
 }
 
-function pickValidators(validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions |
-  null): ValidatorFn | ValidatorFn[] | null {
-  return (isOptionsObj(validatorOrOpts) ? validatorOrOpts.validators : validatorOrOpts) || null;
+function pickValidators(
+  validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null
+): ValidatorFn | ValidatorFn[] | null {
+  return (
+    (isOptionsObj(validatorOrOpts)
+      ? validatorOrOpts.validators
+      : validatorOrOpts) || null
+  );
 }
 
-function coerceToValidator(validator: ValidatorFn | ValidatorFn[] | null): ValidatorFn | null {
-  return Array.isArray(validator) ? composeValidators(validator) : validator || null;
+function coerceToValidator(
+  validator: ValidatorFn | ValidatorFn[] | null
+): ValidatorFn | null {
+  return Array.isArray(validator)
+    ? composeValidators(validator)
+    : validator || null;
 }
 
 function pickAsyncValidators(
   asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null,
-  validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null): AsyncValidatorFn |
-  AsyncValidatorFn[] | null {
-  return (isOptionsObj(validatorOrOpts) ? validatorOrOpts.asyncValidators : asyncValidator) || null;
+  validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null
+): AsyncValidatorFn | AsyncValidatorFn[] | null {
+  return (
+    (isOptionsObj(validatorOrOpts)
+      ? validatorOrOpts.asyncValidators
+      : asyncValidator) || null
+  );
 }
 
-function coerceToAsyncValidator(asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] |
-  null): AsyncValidatorFn | null {
-  return Array.isArray(asyncValidator) ? composeAsyncValidators(asyncValidator) :
-    asyncValidator || null;
+function coerceToAsyncValidator(
+  asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null
+): AsyncValidatorFn | null {
+  return Array.isArray(asyncValidator)
+    ? composeAsyncValidators(asyncValidator)
+    : asyncValidator || null;
 }
 
-export type FormHooks = 'change' | 'blur' | 'submit';
+export type FormHooks = "change" | "blur" | "submit";
 
 export interface AbstractControlOptions {
-
   validators?: ValidatorFn | ValidatorFn[] | null;
 
   asyncValidators?: AsyncValidatorFn | AsyncValidatorFn[] | null;
 
-  updateOn?: 'change' | 'blur' | 'submit';
+  updateOn?: "change" | "blur" | "submit";
 }
 
-function isOptionsObj(validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions |
-  null): validatorOrOpts is AbstractControlOptions {
-  return validatorOrOpts != null && !Array.isArray(validatorOrOpts) &&
-    typeof validatorOrOpts === 'object';
+function isOptionsObj(
+  validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null
+): validatorOrOpts is AbstractControlOptions {
+  return (
+    validatorOrOpts != null &&
+    !Array.isArray(validatorOrOpts) &&
+    typeof validatorOrOpts === "object"
+  );
 }
-
 
 export abstract class AbstractControl {
   _pendingDirty!: boolean;
-
 
   _hasOwnPendingAsyncValidator = false;
 
   _pendingTouched!: boolean;
 
-  _onCollectionChange = () => { };
+  _onCollectionChange = () => {};
 
   _updateOn!: FormHooks;
 
@@ -115,11 +146,14 @@ export abstract class AbstractControl {
 
   constructor(
     validators: ValidatorFn | ValidatorFn[] | null,
-    asyncValidators: AsyncValidatorFn | AsyncValidatorFn[] | null) {
+    asyncValidators: AsyncValidatorFn | AsyncValidatorFn[] | null
+  ) {
     this._rawValidators = validators;
     this._rawAsyncValidators = asyncValidators;
     this._composedValidatorFn = coerceToValidator(this._rawValidators);
-    this._composedAsyncValidatorFn = coerceToAsyncValidator(this._rawAsyncValidators);
+    this._composedAsyncValidatorFn = coerceToAsyncValidator(
+      this._rawAsyncValidators
+    );
   }
 
   get validator(): ValidatorFn | null {
@@ -133,7 +167,8 @@ export abstract class AbstractControl {
     return this._composedAsyncValidatorFn;
   }
   set asyncValidator(asyncValidatorFn: AsyncValidatorFn | null) {
-    this._rawAsyncValidators = this._composedAsyncValidatorFn = asyncValidatorFn;
+    this._rawAsyncValidators = this._composedAsyncValidatorFn =
+      asyncValidatorFn;
   }
 
   get parent(): FormGroup | FormArray | null {
@@ -150,7 +185,6 @@ export abstract class AbstractControl {
     return this.status === INVALID;
   }
 
-
   get pending(): boolean {
     return this.status == PENDING;
   }
@@ -164,7 +198,6 @@ export abstract class AbstractControl {
   }
 
   public readonly errors!: ValidationErrors | null;
-
 
   public readonly pristine: boolean = true;
 
@@ -183,7 +216,11 @@ export abstract class AbstractControl {
   public readonly statusChanges!: Observable<FormControlStatus>;
 
   get updateOn(): FormHooks {
-    return this._updateOn ? this._updateOn : (this.parent ? this.parent.updateOn : 'change');
+    return this._updateOn
+      ? this._updateOn
+      : this.parent
+      ? this.parent.updateOn
+      : "change";
   }
 
   setValidators(validators: ValidatorFn | ValidatorFn[] | null): void {
@@ -191,7 +228,9 @@ export abstract class AbstractControl {
     this._composedValidatorFn = coerceToValidator(validators);
   }
 
-  setAsyncValidators(validators: AsyncValidatorFn | AsyncValidatorFn[] | null): void {
+  setAsyncValidators(
+    validators: AsyncValidatorFn | AsyncValidatorFn[] | null
+  ): void {
     this._rawAsyncValidators = validators;
     this._composedAsyncValidatorFn = coerceToAsyncValidator(validators);
   }
@@ -201,15 +240,21 @@ export abstract class AbstractControl {
   }
 
   addAsyncValidators(validators: AsyncValidatorFn | AsyncValidatorFn[]): void {
-    this.setAsyncValidators(addValidators(validators, this._rawAsyncValidators));
+    this.setAsyncValidators(
+      addValidators(validators, this._rawAsyncValidators)
+    );
   }
 
   removeValidators(validators: ValidatorFn | ValidatorFn[]): void {
     this.setValidators(removeValidators(validators, this._rawValidators));
   }
 
-  removeAsyncValidators(validators: AsyncValidatorFn | AsyncValidatorFn[]): void {
-    this.setAsyncValidators(removeValidators(validators, this._rawAsyncValidators));
+  removeAsyncValidators(
+    validators: AsyncValidatorFn | AsyncValidatorFn[]
+  ): void {
+    this.setAsyncValidators(
+      removeValidators(validators, this._rawAsyncValidators)
+    );
   }
 
   hasValidator(validator: ValidatorFn): boolean {
@@ -239,7 +284,9 @@ export abstract class AbstractControl {
   markAllAsTouched(): void {
     this.markAsTouched({ onlySelf: true });
 
-    this._forEachChild((control: AbstractControl) => control.markAllAsTouched());
+    this._forEachChild((control: AbstractControl) =>
+      control.markAllAsTouched()
+    );
   }
 
   markAsUntouched(opts: { onlySelf?: boolean } = {}): void {
@@ -276,7 +323,7 @@ export abstract class AbstractControl {
     }
   }
 
-  markAsPending(opts: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+  markAsPending(opts: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     (this as { status: FormControlStatus }).status = PENDING;
 
     if (opts.emitEvent !== false) {
@@ -288,8 +335,7 @@ export abstract class AbstractControl {
     }
   }
 
-  disable(opts: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
-
+  disable(opts: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     const skipPristineCheck = this._parentMarkedDirty(opts.onlySelf);
 
     (this as { status: FormControlStatus }).status = DISABLED;
@@ -308,7 +354,7 @@ export abstract class AbstractControl {
     this._onDisabledChange.forEach((changeFn) => changeFn(true));
   }
 
-  enable(opts: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+  enable(opts: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     // If parent has been marked artificially dirty we don't want to re-calculate the
     // parent's dirtiness based on the children.
     const skipPristineCheck = this._parentMarkedDirty(opts.onlySelf);
@@ -323,8 +369,11 @@ export abstract class AbstractControl {
     this._onDisabledChange.forEach((changeFn) => changeFn(false));
   }
 
-  private _updateAncestors(
-    opts: { onlySelf?: boolean, emitEvent?: boolean, skipPristineCheck?: boolean }) {
+  private _updateAncestors(opts: {
+    onlySelf?: boolean;
+    emitEvent?: boolean;
+    skipPristineCheck?: boolean;
+  }) {
     if (this._parent && !opts.onlySelf) {
       this._parent.updateValueAndValidity(opts);
       if (!opts.skipPristineCheck) {
@@ -344,13 +393,16 @@ export abstract class AbstractControl {
 
   abstract reset(value?: any, options?: Object): void;
 
-  updateValueAndValidity(opts: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+  updateValueAndValidity(
+    opts: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     this._setInitialStatus();
     this._updateValue();
 
     if (this.enabled) {
       this._cancelExistingSubscription();
-      (this as { errors: ValidationErrors | null }).errors = this._runValidator();
+      (this as { errors: ValidationErrors | null }).errors =
+        this._runValidator();
       (this as { status: FormControlStatus }).status = this._calculateStatus();
 
       if (this.status === VALID || this.status === PENDING) {
@@ -369,12 +421,16 @@ export abstract class AbstractControl {
   }
 
   _updateTreeValidity(opts: { emitEvent?: boolean } = { emitEvent: true }) {
-    this._forEachChild((ctrl: AbstractControl) => ctrl._updateTreeValidity(opts));
+    this._forEachChild((ctrl: AbstractControl) =>
+      ctrl._updateTreeValidity(opts)
+    );
     this.updateValueAndValidity({ onlySelf: true, emitEvent: opts.emitEvent });
   }
 
   private _setInitialStatus() {
-    (this as { status: FormControlStatus }).status = this._allControlsDisabled() ? DISABLED : VALID;
+    (this as { status: FormControlStatus }).status = this._allControlsDisabled()
+      ? DISABLED
+      : VALID;
   }
 
   private _runValidator(): ValidationErrors | null {
@@ -386,11 +442,13 @@ export abstract class AbstractControl {
       (this as { status: FormControlStatus }).status = PENDING;
       this._hasOwnPendingAsyncValidator = true;
       const obs = toObservable(this.asyncValidator(this));
-      this._asyncValidationSubscription = obs.subscribe((errors: ValidationErrors | null) => {
-        this._hasOwnPendingAsyncValidator = false;
+      this._asyncValidationSubscription = obs.subscribe(
+        (errors: ValidationErrors | null) => {
+          this._hasOwnPendingAsyncValidator = false;
 
-        this.setErrors(errors, { emitEvent });
-      });
+          this.setErrors(errors, { emitEvent });
+        }
+      );
     }
   }
 
@@ -401,14 +459,16 @@ export abstract class AbstractControl {
     }
   }
 
-  setErrors(errors: ValidationErrors | null, opts: { emitEvent?: boolean } = {}): void {
+  setErrors(
+    errors: ValidationErrors | null,
+    opts: { emitEvent?: boolean } = {}
+  ): void {
     (this as { errors: ValidationErrors | null }).errors = errors;
     this._updateControlsErrors(opts.emitEvent !== false);
   }
 
-
   get(path: Array<string | number> | string): AbstractControl | null {
-    return _find(this, path, '.');
+    return _find(this, path, ".");
   }
 
   getError(errorCode: string, path?: Array<string | number> | string): any {
@@ -445,15 +505,20 @@ export abstract class AbstractControl {
 
   /** @internal */
   _initObservables() {
-    (this as { valueChanges: Observable<any> }).valueChanges = new EventEmitter2();
-    (this as { statusChanges: Observable<FormControlStatus> }).statusChanges = new EventEmitter2();
+    (this as { valueChanges: Observable<any> }).valueChanges =
+      new EventEmitter2();
+    (this as { statusChanges: Observable<FormControlStatus> }).statusChanges =
+      new EventEmitter2();
   }
-
 
   private _calculateStatus(): FormControlStatus {
     if (this._allControlsDisabled()) return DISABLED;
     if (this.errors) return INVALID;
-    if (this._hasOwnPendingAsyncValidator || this._anyControlsHaveStatus(PENDING)) return PENDING;
+    if (
+      this._hasOwnPendingAsyncValidator ||
+      this._anyControlsHaveStatus(PENDING)
+    )
+      return PENDING;
     if (this._anyControlsHaveStatus(INVALID)) return INVALID;
     return VALID;
   }
@@ -475,7 +540,9 @@ export abstract class AbstractControl {
 
   /** @internal */
   _anyControlsHaveStatus(status: FormControlStatus): boolean {
-    return this._anyControls((control: AbstractControl) => control.status === status);
+    return this._anyControls(
+      (control: AbstractControl) => control.status === status
+    );
   }
 
   /** @internal */
@@ -511,8 +578,13 @@ export abstract class AbstractControl {
 
   /** @internal */
   _isBoxedValue(formState: any): boolean {
-    return typeof formState === 'object' && formState !== null &&
-      Object.keys(formState).length === 2 && 'value' in formState && 'disabled' in formState;
+    return (
+      typeof formState === "object" &&
+      formState !== null &&
+      Object.keys(formState).length === 2 &&
+      "value" in formState &&
+      "disabled" in formState
+    );
   }
 
   /** @internal */
@@ -521,7 +593,9 @@ export abstract class AbstractControl {
   }
 
   /** @internal */
-  _setUpdateStrategy(opts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null): void {
+  _setUpdateStrategy(
+    opts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null
+  ): void {
     if (isOptionsObj(opts) && opts.updateOn != null) {
       this._updateOn = opts.updateOn!;
     }
@@ -532,11 +606,10 @@ export abstract class AbstractControl {
     return !onlySelf && !!parentDirty && !this._parent!._anyControlsDirty();
   }
 
-
   nestedPath!: string;
   path: string | number | null = null;
 
-  dispatchStateFn: (value: any) => void = (vale: any) => { };
+  dispatchStateFn: (value: any) => void = (vale: any) => {};
 
   getRoot(): AbstractControl {
     if (this.parent) {
@@ -544,46 +617,35 @@ export abstract class AbstractControl {
     } else {
       return this;
     }
-  };
+  }
 
   setState(value: any) {
     const root = this.getRoot();
     const dispatchStateFn = root.dispatchStateFn;
     const path = (
       root.nestedPath ? [root.nestedPath, ...this.getPath()] : this.getPath()
-    ).join('.')
-    if (path === '') {
+    ).join(".");
+    if (path === "") {
       dispatchStateFn(value);
     } else {
-      const newState = produce(
-        (draftState) => {
-          property.setValue(draftState, path, value);
-        });
-      dispatchStateFn(newState)
+      const newState = produce((draftState) => {
+        property.setValue(draftState, path, value);
+      });
+      dispatchStateFn(newState);
     }
   }
 
-
   getPath(): (string | number | null)[] {
-    if (this.parent)
-      return [...this.parent.getPath(), this.path]
-    else
-      return [];
+    if (this.parent) return [...this.parent.getPath(), this.path];
+    else return [];
   }
 
   getPathString(): string {
-    return this.getPath().join('.');
+    return this.getPath().join(".");
   }
-
-
-
-
-
-
 }
 
 export class FormControl extends AbstractControl {
-
   _onChange: Function[] = [];
 
   _pendingValue: any;
@@ -592,53 +654,66 @@ export class FormControl extends AbstractControl {
 
   constructor(
     formState: any = null,
-    validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
-    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null) {
-    super(pickValidators(validatorOrOpts), pickAsyncValidators(asyncValidator, validatorOrOpts));
+    validatorOrOpts?:
+      | ValidatorFn
+      | ValidatorFn[]
+      | AbstractControlOptions
+      | null,
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null
+  ) {
+    super(
+      pickValidators(validatorOrOpts),
+      pickAsyncValidators(asyncValidator, validatorOrOpts)
+    );
     this._applyFormState(formState);
     this._setUpdateStrategy(validatorOrOpts);
     this._initObservables();
     this.updateValueAndValidity({
       onlySelf: true,
-      emitEvent: !!this.asyncValidator
+      emitEvent: !!this.asyncValidator,
     });
   }
 
-
-  setValue(value: any, options: {
-
-    onlySelf?: boolean,
-    emitEvent?: boolean,
-    emitModelToViewChange?: boolean,
-    emitViewToModelChange?: boolean
-  } = {}): void {
+  setValue(
+    value: any,
+    options: {
+      onlySelf?: boolean;
+      emitEvent?: boolean;
+      emitModelToViewChange?: boolean;
+      emitViewToModelChange?: boolean;
+    } = {}
+  ): void {
     (this as { value: any }).value = this._pendingValue = value;
 
     const root = this.getRoot();
-    const tempPath = this.getPath().join('.');
+    const tempPath = this.getPath().join(".");
     const path = root.nestedPath ? `${root.nestedPath}.${tempPath}` : tempPath;
     this.setState(value);
 
-
     if (this._onChange.length && options.emitModelToViewChange !== false) {
-      this._onChange.forEach(
-        (changeFn) => changeFn(this.value, options.emitViewToModelChange !== false));
+      this._onChange.forEach((changeFn) =>
+        changeFn(this.value, options.emitViewToModelChange !== false)
+      );
     }
     this.updateValueAndValidity(options);
   }
 
-
-  patchValue(value: any, options: {
-    onlySelf?: boolean,
-    emitEvent?: boolean,
-    emitModelToViewChange?: boolean,
-    emitViewToModelChange?: boolean
-  } = {}): void {
+  patchValue(
+    value: any,
+    options: {
+      onlySelf?: boolean;
+      emitEvent?: boolean;
+      emitModelToViewChange?: boolean;
+      emitViewToModelChange?: boolean;
+    } = {}
+  ): void {
     this.setValue(value, options);
   }
 
-  reset(formState: any = null, options: { onlySelf?: boolean, emitEvent?: boolean } = {}):
-    void {
+  reset(
+    formState: any = null,
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     this._applyFormState(formState);
     this.markAsPristine(options);
     this.markAsUntouched(options);
@@ -646,7 +721,7 @@ export class FormControl extends AbstractControl {
     this._pendingChange = false;
   }
 
-  _updateValue() { }
+  _updateValue() {}
 
   _anyControls(condition: Function): boolean {
     return false;
@@ -672,15 +747,17 @@ export class FormControl extends AbstractControl {
     removeListItem(this._onDisabledChange, fn);
   }
 
-  _forEachChild(cb: Function): void { }
-
+  _forEachChild(cb: Function): void {}
 
   _syncPendingControls(): boolean {
-    if (this.updateOn === 'submit') {
+    if (this.updateOn === "submit") {
       if (this._pendingDirty) this.markAsDirty();
       if (this._pendingTouched) this.markAsTouched();
       if (this._pendingChange) {
-        this.setValue(this._pendingValue, { onlySelf: true, emitModelToViewChange: false });
+        this.setValue(this._pendingValue, {
+          onlySelf: true,
+          emitModelToViewChange: false,
+        });
         return true;
       }
     }
@@ -690,13 +767,13 @@ export class FormControl extends AbstractControl {
   private _applyFormState(formState: any) {
     if (this._isBoxedValue(formState)) {
       (this as { value: any }).value = this._pendingValue = formState.value;
-      formState.disabled ? this.disable({ onlySelf: true, emitEvent: false }) :
-        this.enable({ onlySelf: true, emitEvent: false });
+      formState.disabled
+        ? this.disable({ onlySelf: true, emitEvent: false })
+        : this.enable({ onlySelf: true, emitEvent: false });
     } else {
       (this as { value: any }).value = this._pendingValue = formState;
     }
   }
-
 
   onChange = (event: any) => {
     const value = getControlValue(event);
@@ -714,7 +791,6 @@ export class FormControl extends AbstractControl {
       this.setValue(value);
     }
   };
-
 
   onBlur = () => {
     if (this.updateOn === "blur") {
@@ -734,27 +810,31 @@ export class FormControl extends AbstractControl {
         this.setValue(this.value);
       }
       if (emitChangeToView) {
-
       }
     }
   };
-
 }
 
-
 export class FormGroup extends AbstractControl {
-
   constructor(
     public controls: { [key: string]: AbstractControl },
-    validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
-    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null) {
-    super(pickValidators(validatorOrOpts), pickAsyncValidators(asyncValidator, validatorOrOpts));
+    validatorOrOpts?:
+      | ValidatorFn
+      | ValidatorFn[]
+      | AbstractControlOptions
+      | null,
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null
+  ) {
+    super(
+      pickValidators(validatorOrOpts),
+      pickAsyncValidators(asyncValidator, validatorOrOpts)
+    );
     this._initObservables();
     this._setUpdateStrategy(validatorOrOpts);
     this._setUpControls();
     this.updateValueAndValidity({
       onlySelf: true,
-      emitEvent: !!this.asyncValidator
+      emitEvent: !!this.asyncValidator,
     });
   }
 
@@ -766,58 +846,86 @@ export class FormGroup extends AbstractControl {
     return control;
   }
 
-  addControl(name: string, control: AbstractControl, options: { emitEvent?: boolean } = {}): void {
+  addControl(
+    name: string,
+    control: AbstractControl,
+    options: { emitEvent?: boolean } = {}
+  ): void {
     this.registerControl(name, control);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
     this._onCollectionChange();
   }
 
   removeControl(name: string, options: { emitEvent?: boolean } = {}): void {
-    if (this.controls[name]) this.controls[name]._registerOnCollectionChange(() => { });
-    delete (this.controls[name]);
+    if (this.controls[name])
+      this.controls[name]._registerOnCollectionChange(() => {});
+    delete this.controls[name];
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
     this._onCollectionChange();
   }
 
-  setControl(name: string, control: AbstractControl, options: { emitEvent?: boolean } = {}): void {
-    if (this.controls[name]) this.controls[name]._registerOnCollectionChange(() => { });
-    delete (this.controls[name]);
+  setControl(
+    name: string,
+    control: AbstractControl,
+    options: { emitEvent?: boolean } = {}
+  ): void {
+    if (this.controls[name])
+      this.controls[name]._registerOnCollectionChange(() => {});
+    delete this.controls[name];
     if (control) this.registerControl(name, control);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
     this._onCollectionChange();
   }
 
   contains(controlName: string): boolean {
-    return this.controls.hasOwnProperty(controlName) && this.controls[controlName].enabled;
+    return (
+      this.controls.hasOwnProperty(controlName) &&
+      this.controls[controlName].enabled
+    );
   }
 
   setValue(
-    value: { [key: string]: any }, options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+    value: { [key: string]: any },
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     this._checkAllValuesPresent(value);
-    Object.keys(value).forEach(name => {
+    Object.keys(value).forEach((name) => {
       this._throwIfControlMissing(name);
-      this.controls[name].setValue(value[name], { onlySelf: true, emitEvent: options.emitEvent });
+      this.controls[name].setValue(value[name], {
+        onlySelf: true,
+        emitEvent: options.emitEvent,
+      });
     });
     this.updateValueAndValidity(options);
   }
 
   patchValue(
-    value: { [key: string]: any }, options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
-
+    value: { [key: string]: any },
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     if (value == null /* both `null` and `undefined` */) return;
 
-    Object.keys(value).forEach(name => {
+    Object.keys(value).forEach((name) => {
       if (this.controls[name]) {
-        this.controls[name].patchValue(value[name], { onlySelf: true, emitEvent: options.emitEvent });
+        this.controls[name].patchValue(value[name], {
+          onlySelf: true,
+          emitEvent: options.emitEvent,
+        });
       }
     });
     this.updateValueAndValidity(options);
-    this.setState(value)
+    this.setState(value);
   }
 
-  reset(value: any = {}, options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+  reset(
+    value: any = {},
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     this._forEachChild((control: AbstractControl, name: string) => {
-      control.reset(value[name], { onlySelf: true, emitEvent: options.emitEvent });
+      control.reset(value[name], {
+        onlySelf: true,
+        emitEvent: options.emitEvent,
+      });
     });
     this._updatePristine(options);
     this._updateTouched(options);
@@ -826,16 +934,28 @@ export class FormGroup extends AbstractControl {
 
   getRawValue(): any {
     return this._reduceChildren(
-      {}, (acc: { [k: string]: AbstractControl }, control: AbstractControl, name: string) => {
-        acc[name] = control instanceof FormControl ? control.value : (<any>control).getRawValue();
+      {},
+      (
+        acc: { [k: string]: AbstractControl },
+        control: AbstractControl,
+        name: string
+      ) => {
+        acc[name] =
+          control instanceof FormControl
+            ? control.value
+            : (<any>control).getRawValue();
         return acc;
-      });
+      }
+    );
   }
 
   _syncPendingControls(): boolean {
-    let subtreeUpdated = this._reduceChildren(false, (updated: boolean, child: AbstractControl) => {
-      return child._syncPendingControls() ? true : updated;
-    });
+    let subtreeUpdated = this._reduceChildren(
+      false,
+      (updated: boolean, child: AbstractControl) => {
+        return child._syncPendingControls() ? true : updated;
+      }
+    );
     if (subtreeUpdated) this.updateValueAndValidity({ onlySelf: true });
     return subtreeUpdated;
   }
@@ -853,7 +973,7 @@ export class FormGroup extends AbstractControl {
   }
 
   _forEachChild(cb: (v: any, k: string) => void): void {
-    Object.keys(this.controls).forEach(key => {
+    Object.keys(this.controls).forEach((key) => {
       const control = this.controls[key];
       control && cb(control, key);
     });
@@ -884,12 +1004,18 @@ export class FormGroup extends AbstractControl {
 
   _reduceValue() {
     return this._reduceChildren(
-      {}, (acc: { [k: string]: AbstractControl }, control: AbstractControl, name: string) => {
+      {},
+      (
+        acc: { [k: string]: AbstractControl },
+        control: AbstractControl,
+        name: string
+      ) => {
         if (control.enabled || this.disabled) {
           acc[name] = control.value;
         }
         return acc;
-      });
+      }
+    );
   }
 
   /** @internal */
@@ -914,25 +1040,34 @@ export class FormGroup extends AbstractControl {
   _checkAllValuesPresent(value: any): void {
     this._forEachChild((control: AbstractControl, name: string) => {
       if (value[name] === undefined) {
-        throw new Error(`Must supply a value for form control with name: '${name}'.`);
+        throw new Error(
+          `Must supply a value for form control with name: '${name}'.`
+        );
       }
     });
   }
 }
 
 export class FormArray extends AbstractControl {
-
   constructor(
     public controls: AbstractControl[],
-    validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
-    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null) {
-    super(pickValidators(validatorOrOpts), pickAsyncValidators(asyncValidator, validatorOrOpts));
+    validatorOrOpts?:
+      | ValidatorFn
+      | ValidatorFn[]
+      | AbstractControlOptions
+      | null,
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null
+  ) {
+    super(
+      pickValidators(validatorOrOpts),
+      pickAsyncValidators(asyncValidator, validatorOrOpts)
+    );
     this._initObservables();
     this._setUpdateStrategy(validatorOrOpts);
     this._setUpControls();
     this.updateValueAndValidity({
       onlySelf: true,
-      emitEvent: !!this.asyncValidator
+      emitEvent: !!this.asyncValidator,
     });
   }
 
@@ -944,19 +1079,22 @@ export class FormArray extends AbstractControl {
     this.controls.push(control);
 
     control.path = this.controls.length - 1;
-    const path = this.getPath().join('.') + '.' + control.path;
-    const newState = produce(
-      (draftState) => {
-        property.setValue(draftState, path, control.value);
-      });
-    this.setState(newState)
+    const path = this.getPath().join(".") + "." + control.path;
+    const newState = produce((draftState) => {
+      property.setValue(draftState, path, control.value);
+    });
+    this.setState(newState);
 
     this._registerControl(control);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
     this._onCollectionChange();
   }
 
-  insert(index: number, control: AbstractControl, options: { emitEvent?: boolean } = {}): void {
+  insert(
+    index: number,
+    control: AbstractControl,
+    options: { emitEvent?: boolean } = {}
+  ): void {
     this.controls.splice(index, 0, control);
 
     this._registerControl(control);
@@ -964,26 +1102,30 @@ export class FormArray extends AbstractControl {
   }
 
   removeAt(index: number, options: { emitEvent?: boolean } = {}): void {
-    if (this.controls[index]) this.controls[index]._registerOnCollectionChange(() => { });
+    if (this.controls[index])
+      this.controls[index]._registerOnCollectionChange(() => {});
 
-    const path = this.getPath().join('.');
-    const newState = produce(
-      (draftState) => {
-        const controls = property.getValue(draftState, path);
-        controls.splice(index, 1);
-      });
+    const path = this.getPath().join(".");
+    const newState = produce((draftState) => {
+      const controls = property.getValue(draftState, path);
+      controls.splice(index, 1);
+    });
     this.setState(newState);
-    this.controls.forEach(
-      (control, index) => {
-        control.path = index;
-      })
+    this.controls.forEach((control, index) => {
+      control.path = index;
+    });
 
     this.controls.splice(index, 1);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
   }
 
-  setControl(index: number, control: AbstractControl, options: { emitEvent?: boolean } = {}): void {
-    if (this.controls[index]) this.controls[index]._registerOnCollectionChange(() => { });
+  setControl(
+    index: number,
+    control: AbstractControl,
+    options: { emitEvent?: boolean } = {}
+  ): void {
+    if (this.controls[index])
+      this.controls[index]._registerOnCollectionChange(() => {});
     this.controls.splice(index, 1);
 
     if (control) {
@@ -999,31 +1141,47 @@ export class FormArray extends AbstractControl {
     return this.controls.length;
   }
 
-
-  setValue(value: any[], options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+  setValue(
+    value: any[],
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     this._checkAllValuesPresent(value);
     value.forEach((newValue: any, index: number) => {
       this._throwIfControlMissing(index);
-      this.at(index).setValue(newValue, { onlySelf: true, emitEvent: options.emitEvent });
+      this.at(index).setValue(newValue, {
+        onlySelf: true,
+        emitEvent: options.emitEvent,
+      });
     });
     this.updateValueAndValidity(options);
   }
 
-  patchValue(value: any[], options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
-
+  patchValue(
+    value: any[],
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     if (value == null /* both `null` and `undefined` */) return;
 
     value.forEach((newValue: any, index: number) => {
       if (this.at(index)) {
-        this.at(index).patchValue(newValue, { onlySelf: true, emitEvent: options.emitEvent });
+        this.at(index).patchValue(newValue, {
+          onlySelf: true,
+          emitEvent: options.emitEvent,
+        });
       }
     });
     this.updateValueAndValidity(options);
   }
 
-  reset(value: any = [], options: { onlySelf?: boolean, emitEvent?: boolean } = {}): void {
+  reset(
+    value: any = [],
+    options: { onlySelf?: boolean; emitEvent?: boolean } = {}
+  ): void {
     this._forEachChild((control: AbstractControl, index: number) => {
-      control.reset(value[index], { onlySelf: true, emitEvent: options.emitEvent });
+      control.reset(value[index], {
+        onlySelf: true,
+        emitEvent: options.emitEvent,
+      });
     });
     this._updatePristine(options);
     this._updateTouched(options);
@@ -1032,21 +1190,28 @@ export class FormArray extends AbstractControl {
 
   getRawValue(): any[] {
     return this.controls.map((control: AbstractControl) => {
-      return control instanceof FormControl ? control.value : (<any>control).getRawValue();
+      return control instanceof FormControl
+        ? control.value
+        : (<any>control).getRawValue();
     });
   }
 
   clear(options: { emitEvent?: boolean } = {}): void {
     if (this.controls.length < 1) return;
-    this._forEachChild((control: AbstractControl) => control._registerOnCollectionChange(() => { }));
+    this._forEachChild((control: AbstractControl) =>
+      control._registerOnCollectionChange(() => {})
+    );
     this.controls.splice(0);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
   }
 
   _syncPendingControls(): boolean {
-    let subtreeUpdated = this.controls.reduce((updated: boolean, child: AbstractControl) => {
-      return child._syncPendingControls() ? true : updated;
-    }, false);
+    let subtreeUpdated = this.controls.reduce(
+      (updated: boolean, child: AbstractControl) => {
+        return child._syncPendingControls() ? true : updated;
+      },
+      false
+    );
     if (subtreeUpdated) this.updateValueAndValidity({ onlySelf: true });
     return subtreeUpdated;
   }
@@ -1070,18 +1235,20 @@ export class FormArray extends AbstractControl {
   }
 
   _updateValue(): void {
-    (this as { value: any }).value =
-      this.controls.filter((control) => control.enabled || this.disabled)
-        .map((control) => control.value);
+    (this as { value: any }).value = this.controls
+      .filter((control) => control.enabled || this.disabled)
+      .map((control) => control.value);
   }
 
   _anyControls(condition: Function): boolean {
-    return this.controls.some((control: AbstractControl) => control.enabled && condition(control));
+    return this.controls.some(
+      (control: AbstractControl) => control.enabled && condition(control)
+    );
   }
 
   _setUpControls(): void {
     this._forEachChild((control: AbstractControl, index: number /***WDS**/) => {
-      this._registerControl(control)
+      this._registerControl(control);
       control.path = index;
     });
   }
@@ -1140,4 +1307,3 @@ export const isReactNative = () =>
   window.navigator.product === "ReactNative";
 export const isEvent = (candidate: any) =>
   !!(candidate && candidate.stopPropagation && candidate.preventDefault);
-

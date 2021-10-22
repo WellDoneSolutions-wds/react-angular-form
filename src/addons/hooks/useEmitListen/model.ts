@@ -1,30 +1,18 @@
 import { Observable, Subject } from "rxjs";
 
-export interface EmitListenProps {
-    destroy$?: Subject<void>
+export type EmitListenTapProps<T> = (value: T) => void;
+
+export interface EmitListenProps<T> {
+  params$?: Observable<any>;
+  destroy$?: Subject<void>;
+  tap?: EmitListenTapProps<T>;
 }
-export type EmitListenReturnEmit<T> = () => {}
-export type EmitListenReturnListen<T = any> = () => void
-
-
-export interface IEmitListenProps {
-    params$?: Observable<any>,
-    destroy$?: Subject<void>
-}
-
-export type EmitReturn<T> = (params: T) => void
-export type ListenReturn<T> = (params: T) => void
-export type EmitListenReturnOpen = () => void
-export type EmitListenReturnClose = () => void
-export enum EmitListenReturnState {
-    OPEN = 'OPEN',
-    CLOSE = 'CLOSE',
+export interface EmitListenReturn<T> {
+  emit: (params: T) => void;
+  listen: (callback: (params: T) => void) => void;
+  open: () => void;
+  close: () => void;
+  state: string;
 }
 
-export interface EmitListenReturn<T = any> {
-    emit: EmitReturn<T>,
-    listen: ListenReturn<T>,
-    open: EmitListenReturnOpen,
-    close: EmitListenReturnClose,
-    state: EmitListenReturnState
-}
+export type Listen<T> = (params: T) => void;

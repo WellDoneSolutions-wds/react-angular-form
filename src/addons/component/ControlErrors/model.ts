@@ -1,8 +1,11 @@
 import { AbstractControl } from "../../..";
-import { IInputContainerPropsRenderProcessing, IInputContainerPropsRenderValidationErrors } from "../inputContainer/model";
+import {
+  IInputContainerPropsRenderProcessing,
+  IInputContainerPropsRenderValidationErrors,
+} from "../inputContainer/model";
 
 export interface ControlErrorsProps {
-    control: AbstractControl,
-    renderErrors: IInputContainerPropsRenderValidationErrors,
-    renderProcessing?: IInputContainerPropsRenderProcessing
+  control: AbstractControl;
+  renderErrors: IInputContainerPropsRenderValidationErrors;
+  renderProcessing?: IInputContainerPropsRenderProcessing;
 }

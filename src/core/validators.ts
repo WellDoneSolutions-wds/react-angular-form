@@ -1,22 +1,28 @@
-import {Observable} from 'rxjs';
+import { Observable } from "rxjs";
 
-import {AbstractControl} from '../model';
-import {emailValidator, maxLengthValidator, maxValidator, minLengthValidator, minValidator, nullValidator, patternValidator, requiredTrueValidator, requiredValidator} from '../validators';
+import { AbstractControl } from "../model";
+import {
+  emailValidator,
+  maxLengthValidator,
+  maxValidator,
+  minLengthValidator,
+  minValidator,
+  nullValidator,
+  patternValidator,
+  requiredTrueValidator,
+  requiredValidator,
+} from "../validators";
 
-
-function toNumber(value: string|number): number {
-  return typeof value === 'number' ? value : parseInt(value, 10);
+function toNumber(value: string | number): number {
+  return typeof value === "number" ? value : parseInt(value, 10);
 }
 
 export type ValidationErrors = {
-  [key: string]: any
+  [key: string]: any;
 };
 
-
 export interface Validator {
-
-  validate(control: AbstractControl): ValidationErrors|null;
-
+  validate(control: AbstractControl): ValidationErrors | null;
 
   registerOnValidatorChange?(fn: () => void): void;
 }
@@ -27,10 +33,8 @@ abstract class AbstractValidatorDirective implements Validator {
 
   abstract inputName: string;
 
-  
   abstract createValidator(input: unknown): ValidatorFn;
 
-  
   abstract normalizeInput(input: unknown): unknown;
 
   handleChanges(changes: any): void {
@@ -43,7 +47,7 @@ abstract class AbstractValidatorDirective implements Validator {
     }
   }
 
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this._validator(control);
   }
 
@@ -52,18 +56,15 @@ abstract class AbstractValidatorDirective implements Validator {
   }
 }
 
-
 export class MaxValidator extends AbstractValidatorDirective {
-
-  max!: string|number;
+  max!: string | number;
   /** @internal */
 
-  inputName = 'max';
+  inputName = "max";
 
- normalizeInput = (input: string): number => parseFloat(input);
-  
+  normalizeInput = (input: string): number => parseFloat(input);
 
- createValidator = (max: number): ValidatorFn => maxValidator(max);
+  createValidator = (max: number): ValidatorFn => maxValidator(max);
 
   ngOnChanges(changes: any): void {
     this.handleChanges(changes);
@@ -101,19 +102,19 @@ export class MinValidator extends AbstractValidatorDirective {
    * @description
    * Tracks changes to the min bound to this directive.
    */
-  min!: string|number;
+  min!: string | number;
   /** @internal */
   // override inputName = 'min';
-   inputName = 'min';
- 
+  inputName = "min";
+
   /** @internal */
   // override normalizeInput = (input: string): number => parseFloat(input);
-   normalizeInput = (input: string): number => parseFloat(input);
-  
+  normalizeInput = (input: string): number => parseFloat(input);
+
   /** @internal */
   // override createValidator = (min: number): ValidatorFn => minValidator(min);
   createValidator = (min: number): ValidatorFn => minValidator(min);
-  
+
   /**
    * Declare `ngOnChanges` lifecycle hook at the main directive level (vs keeping it in base class)
    * to avoid differences in handling inheritance of lifecycle hooks between Ivy and ViewEngine in
@@ -163,8 +164,9 @@ export interface AsyncValidator extends Validator {
    * @returns A promise or observable that resolves a map of validation errors
    * if validation fails, otherwise null.
    */
-  validate(control: AbstractControl):
-      Promise<ValidationErrors|null>|Observable<ValidationErrors|null>;
+  validate(
+    control: AbstractControl
+  ): Promise<ValidationErrors | null> | Observable<ValidationErrors | null>;
 }
 
 /**
@@ -204,12 +206,12 @@ export class RequiredValidator implements Validator {
    * @description
    * Tracks changes to the required attribute bound to this directive.
    */
-  get required(): boolean|string {
+  get required(): boolean | string {
     return this._required;
   }
 
-  set required(value: boolean|string) {
-    this._required = value != null && value !== false && `${value}` !== 'false';
+  set required(value: boolean | string) {
+    this._required = value != null && value !== false && `${value}` !== "false";
     if (this._onChange) this._onChange();
   }
 
@@ -218,7 +220,7 @@ export class RequiredValidator implements Validator {
    * Returns the validation result if enabled, otherwise null.
    * @nodoc
    */
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this.required ? requiredValidator(control) : null;
   }
 
@@ -230,7 +232,6 @@ export class RequiredValidator implements Validator {
     this._onChange = fn;
   }
 }
-
 
 /**
  * A Directive that adds the `required` validator to checkbox controls marked with the
@@ -260,7 +261,7 @@ export class CheckboxRequiredValidator extends RequiredValidator {
    * @nodoc
    */
   //  override validate(control: AbstractControl): ValidationErrors|null {
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this.required ? requiredTrueValidator(control) : null;
   }
 }
@@ -300,8 +301,8 @@ export class EmailValidator implements Validator {
    * @description
    * Tracks changes to the email attribute bound to this directive.
    */
-  set email(value: boolean|string) {
-    this._enabled = value === '' || value === true || value === 'true';
+  set email(value: boolean | string) {
+    this._enabled = value === "" || value === true || value === "true";
     if (this._onChange) this._onChange();
   }
 
@@ -310,7 +311,7 @@ export class EmailValidator implements Validator {
    * Returns the validation result if enabled, otherwise null.
    * @nodoc
    */
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this._enabled ? emailValidator(control) : null;
   }
 
@@ -331,7 +332,7 @@ export class EmailValidator implements Validator {
  * @publicApi
  */
 export interface ValidatorFn {
-  (control: AbstractControl): ValidationErrors|null;
+  (control: AbstractControl): ValidationErrors | null;
 }
 
 /**
@@ -342,7 +343,9 @@ export interface ValidatorFn {
  * @publicApi
  */
 export interface AsyncValidatorFn {
-  (control: AbstractControl): Promise<ValidationErrors|null>|Observable<ValidationErrors|null>;
+  (control: AbstractControl):
+    | Promise<ValidationErrors | null>
+    | Observable<ValidationErrors | null>;
 }
 
 /**
@@ -379,11 +382,11 @@ export class MinLengthValidator implements Validator {
    * @description
    * Tracks changes to the minimum length bound to this directive.
    */
-  minlength!: string|number|null;  // This input is always defined, since the name matches selector.
+  minlength!: string | number | null; // This input is always defined, since the name matches selector.
 
   /** @nodoc */
   ngOnChanges(changes: any): void {
-    if ('minlength' in changes) {
+    if ("minlength" in changes) {
       this._createValidator();
       if (this._onChange) this._onChange();
     }
@@ -394,7 +397,7 @@ export class MinLengthValidator implements Validator {
    * Returns the validation result if enabled, otherwise null.
    * @nodoc
    */
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this.enabled() ? this._validator(control) : null;
   }
 
@@ -407,8 +410,9 @@ export class MinLengthValidator implements Validator {
   }
 
   private _createValidator(): void {
-    this._validator =
-        this.enabled() ? minLengthValidator(toNumber(this.minlength!)) : nullValidator;
+    this._validator = this.enabled()
+      ? minLengthValidator(toNumber(this.minlength!))
+      : nullValidator;
   }
 
   /** @nodoc */
@@ -451,11 +455,11 @@ export class MaxLengthValidator implements Validator {
    * @description
    * Tracks changes to the maximum length bound to this directive.
    */
-  maxlength!: string|number|null;  // This input is always defined, since the name matches selector.
+  maxlength!: string | number | null; // This input is always defined, since the name matches selector.
 
   /** @nodoc */
   ngOnChanges(changes: any): void {
-    if ('maxlength' in changes) {
+    if ("maxlength" in changes) {
       this._createValidator();
       if (this._onChange) this._onChange();
     }
@@ -465,7 +469,7 @@ export class MaxLengthValidator implements Validator {
    * Method that validates whether the value exceeds the maximum length requirement.
    * @nodoc
    */
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this.enabled() ? this._validator(control) : null;
   }
 
@@ -478,8 +482,9 @@ export class MaxLengthValidator implements Validator {
   }
 
   private _createValidator(): void {
-    this._validator =
-        this.enabled() ? maxLengthValidator(toNumber(this.maxlength!)) : nullValidator;
+    this._validator = this.enabled()
+      ? maxLengthValidator(toNumber(this.maxlength!))
+      : nullValidator;
   }
 
   /** @nodoc */
@@ -492,7 +497,6 @@ export class MaxLengthValidator implements Validator {
  * @description
  * Provider which adds `PatternValidator` to the `NG_VALIDATORS` multi-provider list.
  */
-
 
 /**
  * @description
@@ -525,11 +529,11 @@ export class PatternValidator implements Validator {
    * @description
    * Tracks changes to the pattern bound to this directive.
    */
-  pattern!: string|RegExp;  // This input is always defined, since the name matches selector.
+  pattern!: string | RegExp; // This input is always defined, since the name matches selector.
 
   /** @nodoc */
   ngOnChanges(changes: any): void {
-    if ('pattern' in changes) {
+    if ("pattern" in changes) {
       this._createValidator();
       if (this._onChange) this._onChange();
     }
@@ -539,7 +543,7 @@ export class PatternValidator implements Validator {
    * Method that validates whether the value matches the pattern requirement.
    * @nodoc
    */
-  validate(control: AbstractControl): ValidationErrors|null {
+  validate(control: AbstractControl): ValidationErrors | null {
     return this._validator(control);
   }
 

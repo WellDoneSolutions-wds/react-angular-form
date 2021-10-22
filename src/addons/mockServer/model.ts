@@ -1,10 +1,8 @@
-
-
 export interface MockServerConfig {
-    time?: number,
-    responses: {
-        isError: boolean,
-        ocurrence: number,
-        data: any
-    }[]
+  time?: number;
+  responses: {
+    isError: boolean;
+    ocurrence: number;
+    data: () => any;
+  }[];
 }
