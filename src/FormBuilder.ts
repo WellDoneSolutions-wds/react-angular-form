@@ -12,9 +12,9 @@ function isAbstractControlOptions(
   options: AbstractControlOptions | { [key: string]: any }
 ): options is AbstractControlOptions {
   return (
-    (<AbstractControlOptions>options).asyncValidators !== undefined ||
-    (<AbstractControlOptions>options).validators !== undefined ||
-    (<AbstractControlOptions>options).updateOn !== undefined
+    (options as AbstractControlOptions).asyncValidators !== undefined ||
+    (options as AbstractControlOptions).validators !== undefined ||
+    (options as AbstractControlOptions).updateOn !== undefined
   );
 }
 
@@ -30,7 +30,6 @@ function isAbstractControlOptions(
  *
  * @publicApi
  */
-//  @Injectable({providedIn: ReactiveFormsModule})
 export class FormBuilder {
   /**
    * @description

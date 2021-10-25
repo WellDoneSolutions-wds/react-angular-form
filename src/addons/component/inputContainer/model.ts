@@ -1,12 +1,12 @@
-import React, { CSSProperties } from "react";
+import React from "react";
 import { FormControl } from "../../..";
 import { AbstractControl } from "../../../model";
-import { EnumStatusType, IProcessingStatus } from "../../common/model";
+import { EnumStatusType, IAsyncCallExecution } from "../../common/model";
 
 export interface IInputContainerRenderInputParams {
   control: FormControl;
   data: any;
-  validationStatus: EnumStatusType;
+  validationStatus?: EnumStatusType;
   showErrors: boolean;
 }
 
@@ -33,7 +33,7 @@ export type IInputContainerPropsShowErrorsFn = (
 ) => boolean;
 
 export type IInputContainerPropsData = {
-  load?: IProcessingStatus;
+  load?: IAsyncCallExecution;
   renderReload?: IInputContainerPropsRenderReload;
 };
 export interface IInputContainerProps {

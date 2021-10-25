@@ -1,7 +1,6 @@
 import { Observable } from "rxjs";
-
-import { AbstractControl } from "../model";
 import {
+  AbstractControl,
   emailValidator,
   maxLengthValidator,
   maxValidator,
@@ -11,7 +10,7 @@ import {
   patternValidator,
   requiredTrueValidator,
   requiredValidator,
-} from "../validators";
+} from "..";
 
 function toNumber(value: string | number): number {
   return typeof value === "number" ? value : parseInt(value, 10);

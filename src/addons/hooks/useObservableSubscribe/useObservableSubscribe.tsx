@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Observable, Subject, takeUntil, tap } from "rxjs";
-import { produce } from "immer";
+import { Subject, takeUntil, tap } from "rxjs";
 import { UseSubscribeObsProps } from "./model";
 
 export const useObservableSubscribe = (props: UseSubscribeObsProps) => {
@@ -20,25 +19,13 @@ export const useObservableSubscribe = (props: UseSubscribeObsProps) => {
         takeUntil(destroy$),
         tap(
           (value) => {
-            setState(
-              produce((draft) => {
-                draft.value = value;
-              })
-            );
+            setState({ value });
           },
           (error) => {
-            setState(
-              produce((draft) => {
-                draft.error = error;
-              })
-            );
+            setState({ error });
           },
           () => {
-            setState(
-              produce((draft) => {
-                draft.completed = true;
-              })
-            );
+            setState({ completed: true });
           }
         )
       )

@@ -7,6 +7,8 @@
  */
 
 import { Observable } from "rxjs";
+import { EventEmitter, EventEmitter2 } from "./core/event_emitter";
+import { removeListItem } from "./core/shared";
 import {
   AsyncValidatorFn,
   ValidationErrors,
@@ -17,14 +19,9 @@ import {
   composeAsyncValidators,
   composeValidators,
   hasValidator,
-  makeValidatorsArray,
   removeValidators,
   toObservable,
 } from "./validators";
-import { EventEmitter, EventEmitter2 } from "./core/event_emitter";
-import produce from "immer";
-import * as property from "./utils/property";
-import { removeListItem } from "./core/shared";
 
 export const VALID = "VALID";
 
@@ -55,7 +52,7 @@ function _find(
         ? controlToFind.controls[name]
         : null;
     } else if (controlToFind instanceof FormArray) {
-      controlToFind = controlToFind.at(<number>name) || null;
+      controlToFind = controlToFind.at(name as number) || null;
     } else {
       controlToFind = null;
     }
@@ -186,7 +183,7 @@ export abstract class AbstractControl {
   }
 
   get pending(): boolean {
-    return this.status == PENDING;
+    return this.status === PENDING;
   }
 
   get disabled(): boolean {
@@ -606,10 +603,7 @@ export abstract class AbstractControl {
     return !onlySelf && !!parentDirty && !this._parent!._anyControlsDirty();
   }
 
-  nestedPath!: string;
-  path: string | number | null = null;
-
-  dispatchStateFn: (value: any) => void = (vale: any) => {};
+  reRender!: (r: number) => void;
 
   getRoot(): AbstractControl {
     if (this.parent) {
@@ -617,31 +611,6 @@ export abstract class AbstractControl {
     } else {
       return this;
     }
-  }
-
-  setState(value: any) {
-    const root = this.getRoot();
-    const dispatchStateFn = root.dispatchStateFn;
-    const path = (
-      root.nestedPath ? [root.nestedPath, ...this.getPath()] : this.getPath()
-    ).join(".");
-    if (path === "") {
-      dispatchStateFn(value);
-    } else {
-      const newState = produce((draftState) => {
-        property.setValue(draftState, path, value);
-      });
-      dispatchStateFn(newState);
-    }
-  }
-
-  getPath(): (string | number | null)[] {
-    if (this.parent) return [...this.parent.getPath(), this.path];
-    else return [];
-  }
-
-  getPathString(): string {
-    return this.getPath().join(".");
   }
 }
 
@@ -684,12 +653,9 @@ export class FormControl extends AbstractControl {
     } = {}
   ): void {
     (this as { value: any }).value = this._pendingValue = value;
-
     const root = this.getRoot();
-    const tempPath = this.getPath().join(".");
-    const path = root.nestedPath ? `${root.nestedPath}.${tempPath}` : tempPath;
-    this.setState(value);
-
+    const reRender = root.reRender;
+    reRender && reRender(Math.random());
     if (this._onChange.length && options.emitModelToViewChange !== false) {
       this._onChange.forEach((changeFn) =>
         changeFn(this.value, options.emitViewToModelChange !== false)
@@ -914,7 +880,10 @@ export class FormGroup extends AbstractControl {
       }
     });
     this.updateValueAndValidity(options);
-    this.setState(value);
+
+    const root = this.getRoot();
+    const reRender = root.reRender;
+    reRender && reRender(Math.random());
   }
 
   reset(
@@ -943,7 +912,7 @@ export class FormGroup extends AbstractControl {
         acc[name] =
           control instanceof FormControl
             ? control.value
-            : (<any>control).getRawValue();
+            : (control as any).getRawValue();
         return acc;
       }
     );
@@ -980,9 +949,8 @@ export class FormGroup extends AbstractControl {
   }
 
   _setUpControls(): void {
-    this._forEachChild((control: AbstractControl, key: string /***WDS***/) => {
+    this._forEachChild((control: AbstractControl, key: string) => {
       control.setParent(this);
-      control.path = key;
 
       control._registerOnCollectionChange(this._onCollectionChange);
     });
@@ -1078,16 +1046,13 @@ export class FormArray extends AbstractControl {
   push(control: AbstractControl, options: { emitEvent?: boolean } = {}): void {
     this.controls.push(control);
 
-    control.path = this.controls.length - 1;
-    const path = this.getPath().join(".") + "." + control.path;
-    const newState = produce((draftState) => {
-      property.setValue(draftState, path, control.value);
-    });
-    this.setState(newState);
-
     this._registerControl(control);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
     this._onCollectionChange();
+
+    const root = this.getRoot();
+    const reRender = root.reRender;
+    reRender && reRender(Math.random());
   }
 
   insert(
@@ -1099,24 +1064,22 @@ export class FormArray extends AbstractControl {
 
     this._registerControl(control);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
+
+    const root = this.getRoot();
+    const reRender = root.reRender;
+    reRender && reRender(Math.random());
   }
 
   removeAt(index: number, options: { emitEvent?: boolean } = {}): void {
     if (this.controls[index])
       this.controls[index]._registerOnCollectionChange(() => {});
 
-    const path = this.getPath().join(".");
-    const newState = produce((draftState) => {
-      const controls = property.getValue(draftState, path);
-      controls.splice(index, 1);
-    });
-    this.setState(newState);
-    this.controls.forEach((control, index) => {
-      control.path = index;
-    });
-
     this.controls.splice(index, 1);
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
+
+    const root = this.getRoot();
+    const reRender = root.reRender;
+    reRender && reRender(Math.random());
   }
 
   setControl(
@@ -1135,6 +1098,10 @@ export class FormArray extends AbstractControl {
 
     this.updateValueAndValidity({ emitEvent: options.emitEvent });
     this._onCollectionChange();
+
+    const root = this.getRoot();
+    const reRender = root.reRender;
+    reRender && reRender(Math.random());
   }
 
   get length(): number {
@@ -1192,7 +1159,7 @@ export class FormArray extends AbstractControl {
     return this.controls.map((control: AbstractControl) => {
       return control instanceof FormControl
         ? control.value
-        : (<any>control).getRawValue();
+        : (control as any).getRawValue();
     });
   }
 
@@ -1249,7 +1216,6 @@ export class FormArray extends AbstractControl {
   _setUpControls(): void {
     this._forEachChild((control: AbstractControl, index: number /***WDS**/) => {
       this._registerControl(control);
-      control.path = index;
     });
   }
 

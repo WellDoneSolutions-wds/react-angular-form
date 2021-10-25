@@ -1,13 +1,12 @@
-import { concatMap, delay, map, of, take } from "rxjs";
+import { concatMap, delay, from, map, Observable, of, take, zip } from "rxjs";
+import { ModuleUtils } from "../../../../utils/lang";
 import { MockServerConfig } from "./model";
 
 export class MockServer {
   constructor(private config: MockServerConfig) {}
-
   static create = (config: MockServerConfig) => {
     return new MockServer(config);
   };
-
   getConfig() {
     const sum = this.config.responses.reduce((t, e) => t + e.ocurrence, 0);
     const ranges = this.config.responses
@@ -17,7 +16,7 @@ export class MockServer {
           percentil: Math.floor((resp.ocurrence * 100) / sum),
         };
       })
-      .reduce((t, e) => {
+      .reduce((t: any[], e) => {
         const lastRange =
           t.length > 0 ? t[t.length - 1] : { top: 0, bottom: 0 };
         return [
@@ -40,10 +39,18 @@ export class MockServer {
       concatMap((_) => of(this.getConfig())),
       take(1),
       delay(this.config.time || Math.random() * 3000),
-      map((config) => {
-        const data = config.data();
-        if (config.isError) throw data;
-        return data;
+      concatMap((config) => {
+        const data$ = config.data();
+        const loadData$: Observable<any> = ModuleUtils.isObservable(data$)
+          ? data$
+          : ModuleUtils.isPromise(data$)
+          ? from(data$)
+          : of(data$);
+        return zip(loadData$, of(config.isError));
+      }),
+      map((data) => {
+        if (data[1]) throw data[0];
+        return data[0];
       })
     );
   }

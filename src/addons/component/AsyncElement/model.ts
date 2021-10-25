@@ -1,8 +1,8 @@
 import { CSSProperties } from "react";
-import { IProcessingStatus } from "../../common/model";
+import { IAsyncCallExecution } from "../../..";
 
 export interface AsyncElementProps {
-  status: IProcessingStatus | IProcessingStatus[];
+  status: IAsyncCallExecution | IAsyncCallExecution[];
   renderElement: (data: any) => React.ReactFragment;
   renderProcessing?: () => React.ReactFragment;
   renderError?: (error: any) => React.ReactFragment;

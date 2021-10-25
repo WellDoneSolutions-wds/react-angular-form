@@ -1,10 +1,12 @@
-import produce from "immer";
 import React, { PureComponent } from "react";
 import { Subject } from "rxjs";
 import { map, startWith, takeUntil, tap } from "rxjs/operators";
-import { FormControl } from "../../..";
-import { AbstractControl } from "../../../model";
-import { EnumStatusType, IProcessingStatus } from "../../common/model";
+import {
+  AbstractControl,
+  EnumStatusType,
+  FormControl,
+  IAsyncCallExecution,
+} from "../../..";
 import {
   IInputContainerProps,
   IInputContainerPropsData,
@@ -13,7 +15,7 @@ import {
 
 export class InputContainer extends PureComponent<
   IInputContainerProps,
-  IProcessingStatus
+  IAsyncCallExecution
 > {
   constructor(props: any) {
     super(props);
@@ -34,7 +36,7 @@ export class InputContainer extends PureComponent<
       .pipe(
         takeUntil(this.destroy$),
         startWith(control.status),
-        map((statusType: string): IProcessingStatus => {
+        map((statusType: string): IAsyncCallExecution => {
           if (statusType === "INVALID") {
             return {
               status: "ERROR",
@@ -51,14 +53,12 @@ export class InputContainer extends PureComponent<
             data: {},
           };
         }),
-        tap((status: IProcessingStatus) => {
-          this.setState(
-            produce((draft: IProcessingStatus) => {
-              draft.data = status.data;
-              draft.error = status.error;
-              draft.status = status.status;
-            })
-          );
+        tap((execution: IAsyncCallExecution) => {
+          this.setState({
+            data: execution.data,
+            error: execution.error,
+            status: execution.status,
+          });
         })
       )
       .subscribe();
@@ -89,7 +89,7 @@ export class InputContainer extends PureComponent<
     const data: IInputContainerPropsData = this.props.data
       ? this.props.data
       : {};
-    const dataLoadStatus: IProcessingStatus = data.load
+    const dataLoadStatus: IAsyncCallExecution = data.load
       ? data.load
       : { status: "SUCCESS" };
     const renderLabel = this.props.renderLabel;

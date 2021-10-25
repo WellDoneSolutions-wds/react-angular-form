@@ -1,25 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { delay, filter, Subject, takeUntil, tap } from "rxjs";
-import { FormGroup } from "../../../model";
+import { FormGroup } from "../../..";
 import { UseFormGroupReturn } from "./model";
 
-export const useFormGroup = (formGroup?: FormGroup): UseFormGroupReturn => {
-  const [, state] = useState({});
+export const useFormGroup = (): UseFormGroupReturn => {
   const [, reRender] = useState(0);
-  const formGroupRef = useRef<FormGroup>(formGroup || new FormGroup({}));
-  const setFormGroup$ = new Subject<FormGroup>();
-  const destroy$ = new Subject<void>();
+  const formGroupRef = useRef<FormGroup>(new FormGroup({}));
+  const setFormGroup$Ref = useRef(new Subject<FormGroup>());
+  const destroy$Ref = useRef(new Subject<void>());
+  const setFormGroupRef = useRef(
+    setFormGroup$Ref.current.next.bind(setFormGroup$Ref.current)
+  );
+  const getFormGroupRef = useRef(() => formGroupRef.current);
 
   useEffect(() => {
-    setFormGroup$
+    setFormGroup$Ref.current
       .pipe(
-        takeUntil(destroy$),
+        takeUntil(destroy$Ref.current),
         filter((formGroup) => formGroup !== formGroupRef.current),
         tap((formGroup) => {
-          setImmediate(() => {
-            formGroupRef.current = formGroup;
-            formGroupRef.current.dispatchStateFn = state;
-          });
+          formGroupRef.current = formGroup;
+          formGroupRef.current.reRender = reRender;
         }),
         delay(1),
         tap(() => {
@@ -28,12 +29,9 @@ export const useFormGroup = (formGroup?: FormGroup): UseFormGroupReturn => {
       )
       .subscribe();
   }, []);
-  const getFormGroup= () => {
-    return formGroupRef.current;
-  }
+
   return {
-    formGroup: formGroupRef.current,
-    setFormGroup: setFormGroup$.next.bind(setFormGroup$),
-    getFormGroup: getFormGroup.bind(formGroupRef)
+    setFormGroup: setFormGroupRef.current,
+    getFormGroup: getFormGroupRef.current,
   };
 };

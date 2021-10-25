@@ -274,7 +274,7 @@ function compose(
 ): ValidatorFn | null {
   if (!validators) return null;
   const presentValidators: ValidatorFn[] = validators.filter(isPresent) as any;
-  if (presentValidators.length == 0) return null;
+  if (presentValidators.length === 0) return null;
 
   return function (control: AbstractControl) {
     return mergeErrors(
@@ -307,7 +307,7 @@ function composeAsync(
   const presentValidators: AsyncValidatorFn[] = validators.filter(
     isPresent
   ) as any;
-  if (presentValidators.length == 0) return null;
+  if (presentValidators.length === 0) return null;
 
   return function (control: AbstractControl) {
     const observables = executeValidators<AsyncValidatorFn>(

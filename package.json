@@ -1,6 +1,6 @@
 {
   "name": "react-angular-forms",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "description": "React Angular - Reactives Forms like Angular for React",
   "main": "./lib/index.js",
   "types": "./es/index.d.ts",
@@ -30,8 +30,7 @@
   },
   "peerDependencies": {
     "react": "^16.8.3 || ^17 || ^18",
-    "rxjs": "^7.3.0",
-    "immer": "^9.0.5"
+    "rxjs": "^7.3.0"
   },
   "peerDependenciesMeta": {
     "react-dom": {
@@ -39,8 +38,7 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "^7.12.1",
-    "prop-types": "^15.7.2"
+    "@babel/runtime": "^7.12.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",
@@ -83,7 +81,6 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.5",
     "glob": "^7.1.6",
-    "immer": "^9.0.5",
     "jest": "^26.6.1",
     "prettier": "^2.4.1",
     "react": "0.0.0-experimental-7d38e4fd8-20210930",

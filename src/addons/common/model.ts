@@ -21,9 +21,7 @@ export interface IRetryProcessing {
   maxRetryAttempts: number;
   interval: number;
   typeInterval?: "LINEAR" | "EXPONENTIAL";
-  retryWhenStatus?: number[];
   notRetryWhenStatus?: number[];
-  retryWhen?: (error: any) => boolean;
   noRetryWhen?: (error: any) => boolean;
 }
 
@@ -31,13 +29,13 @@ export interface IAsyncCallConfig {
   executeFn$?: (params: any) => any | Promise<any> | Observable<any>;
   retry?: IRetryProcessing;
   onProcessingStatus?: (
-    processingStatus: IProcessingStatus,
+    processingStatus: IAsyncCallExecution,
     params: PlainObject
   ) => void;
 }
 
 export type EnumStatusType = "PROCESSING" | "SUCCESS" | "ERROR" | "CANCELED";
-export interface IProcessingStatus<T = any> {
+export interface IAsyncCallExecution<T = any> {
   status?: EnumStatusType;
   data?: T;
   error?: any;
