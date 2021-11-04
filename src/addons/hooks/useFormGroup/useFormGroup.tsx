@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { delay, filter, Subject, takeUntil, tap } from "rxjs";
+import { Subject } from "rxjs";
+import { delay, filter, takeUntil, tap } from "rxjs/operators";
 import { FormGroup } from "../../..";
 import { UseFormGroupReturn } from "./model";
 
@@ -17,8 +18,8 @@ export const useFormGroup = (): UseFormGroupReturn => {
     setFormGroup$Ref.current
       .pipe(
         takeUntil(destroy$Ref.current),
-        filter((formGroup) => formGroup !== formGroupRef.current),
-        tap((formGroup) => {
+        filter((formGroup: FormGroup) => formGroup !== formGroupRef.current),
+        tap((formGroup: FormGroup) => {
           formGroupRef.current = formGroup;
           formGroupRef.current.reRender = reRender;
         }),

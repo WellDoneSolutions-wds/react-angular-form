@@ -1,7 +1,20 @@
 import React from "react";
 import { FormControl } from "../../..";
 import { AbstractControl } from "../../../model";
-import { EnumStatusType, IAsyncCallExecution } from "../../common/model";
+
+export type EnumStatusType =
+  | "WAITING"
+  | "PROCESSING"
+  | "SUCCESS"
+  | "ERROR"
+  | "CANCELED";
+
+export interface IAsyncCallExecution<T = any> {
+  status?: EnumStatusType;
+  data?: T;
+  error?: any;
+  config?: any;
+}
 
 export interface IInputContainerRenderInputParams {
   control: FormControl;
