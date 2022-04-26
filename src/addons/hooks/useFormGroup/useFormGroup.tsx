@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import { Subject } from "rxjs";
 import { delay, filter, takeUntil, tap } from "rxjs/operators";
 import { FormGroup } from "../../..";
 import { UseFormGroupReturn } from "./model";
 
 export const useFormGroup = (): UseFormGroupReturn => {
-  const [, reRender] = useState(0);
+  const [, reRender] = useReducer((x) => x + 1, 0);
   const formGroupRef = useRef<FormGroup>(new FormGroup({}));
   const setFormGroup$Ref = useRef(new Subject<FormGroup>());
   const destroy$Ref = useRef(new Subject<void>());
@@ -21,11 +21,11 @@ export const useFormGroup = (): UseFormGroupReturn => {
         filter((formGroup: FormGroup) => formGroup !== formGroupRef.current),
         tap((formGroup: FormGroup) => {
           formGroupRef.current = formGroup;
-          formGroupRef.current.reRender = reRender;
+          formGroupRef.current.forceUpdate = reRender;
         }),
         delay(1),
         tap(() => {
-          reRender(Math.random());
+          reRender();
         })
       )
       .subscribe();

@@ -1,6 +1,5 @@
 import React from "react";
-import { FormControl } from "../../..";
-import { AbstractControl } from "../../../model";
+import { AbstractControl, FormControl } from "../../..";
 
 export type EnumStatusType =
   | "WAITING"

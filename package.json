@@ -1,7 +1,7 @@
 {
   "name": "react-angular-forms",
-  "version": "0.5.1",
-  "description": "React Angular - Reactives Forms like Angular for React",
+  "version": "0.6.0",
+  "description": "React Angular - Reactive Forms like Angular for React",
   "main": "./lib/index.js",
   "types": "./es/index.d.ts",
   "unpkg": "dist/react-angular-form.js",
@@ -30,7 +30,7 @@
   },
   "peerDependencies": {
     "react": "^16.8.3 || ^17 || ^18",
-    "rxjs": "^6.0.0"
+    "rxjs": "^6.5.3 || ^7.4.0"
   },
   "peerDependenciesMeta": {
     "react-dom": {
@@ -38,8 +38,7 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "^7.12.1",
-    "rx-executor": "0.0.1"
+    "@babel/runtime": "^7.12.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",
